@@ -28,6 +28,6 @@
     }
   ],
   "storage": {
-    "rules": "firebasestorage.rules"
+    "rules": "storage.rules"
   }
 }
