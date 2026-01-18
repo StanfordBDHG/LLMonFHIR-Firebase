@@ -10,15 +10,19 @@ Firebase Functions backend for LLMonFHIR with a RAG-enabled OpenAI-compatible `/
 > functions/.secret.local must contain a valid OPENAI_API_KEY
 
 ```bash
+cd functions
+npm install
+cd ..
 sh run-emulator.sh
 ```
 
-This builds functions and starts Firebase emulators. Ensure the `OPENAI_API_KEY` secret is configured in your Firebase project before deploying.
+This installs backend dependencies, builds functions, and starts Firebase emulators. Ensure the `OPENAI_API_KEY` secret is configured in your Firebase project before deploying.
 
 ### Web client (optional)
 
 ```bash
 cd web
+npm install
 npm run dev
 ```
 
