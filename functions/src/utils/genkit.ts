@@ -9,7 +9,7 @@
 import {genkit} from "genkit";
 import {openAI} from "@genkit-ai/compat-oai/openai";
 import {defineFirestoreRetriever} from "@genkit-ai/firebase";
-import { firestore } from "./firebase";
+import {firestore} from "./firebase";
 
 const embedder = openAI.embedder("text-embedding-3-large");
 const VECTOR_STORE_NAME = "rag-chunks";
@@ -23,9 +23,9 @@ export const ai = genkit({
 export const ragRetriever = defineFirestoreRetriever(ai, {
   name: VECTOR_STORE_NAME,
   firestore: firestore,
-  collection: 'documents',
-  contentField: 'text',
-  vectorField: 'embedding',
+  collection: "documents",
+  contentField: "text",
+  vectorField: "embedding",
   embedder,
-  distanceMeasure: 'COSINE',
+  distanceMeasure: "COSINE",
 });

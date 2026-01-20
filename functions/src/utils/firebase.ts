@@ -7,7 +7,7 @@
 //
 
 import {initializeApp} from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
+import {getFirestore} from "firebase-admin/firestore";
 import {getStorage} from "firebase-admin/storage";
 
 // Initialize Firebase

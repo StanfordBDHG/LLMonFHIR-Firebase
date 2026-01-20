@@ -16,7 +16,7 @@ import type {
 } from "openai/resources/chat/completions";
 import {retrieveRAGContext} from "../rag/retriever";
 import {getAuth} from "firebase-admin/auth";
-import { serviceAccount } from "../utils/firebase";
+import {serviceAccount} from "../utils/firebase";
 
 type ChatBody =
   | ChatCompletionCreateParamsStreaming
@@ -85,7 +85,7 @@ const normalizeMessageContent = (
 const openAIAPIKey = defineSecret("OPENAI_API_KEY");
 
 export const chat = onRequest(
-  {secrets: [openAIAPIKey], cors: true, serviceAccount: serviceAccount },
+  {secrets: [openAIAPIKey], cors: true, serviceAccount: serviceAccount},
   async (req, res) => {
     if (req.method !== "POST") {
       res.status(405).send("Method Not Allowed");
