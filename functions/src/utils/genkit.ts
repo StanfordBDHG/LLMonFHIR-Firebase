@@ -6,8 +6,8 @@
 // SPDX-License-Identifier: MIT
 //
 
-import { genkit } from "genkit";
-import { openAI } from "@genkit-ai/compat-oai/openai";
+import {genkit} from "genkit";
+import {openAI} from "@genkit-ai/compat-oai/openai";
 import {
   devLocalVectorstore,
   devLocalIndexerRef,

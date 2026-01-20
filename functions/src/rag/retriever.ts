@@ -6,8 +6,8 @@
 // SPDX-License-Identifier: MIT
 //
 
-import { Document } from "genkit";
-import { ai, ragRetriever } from "../utils/genkit";
+import {Document} from "genkit";
+import {ai, ragRetriever} from "../utils/genkit";
 
 export const RAG_RETRIEVAL_K = 5;
 

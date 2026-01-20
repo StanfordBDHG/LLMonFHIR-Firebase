@@ -6,12 +6,12 @@
 // SPDX-License-Identifier: MIT
 //
 
-import { extractText, getDocumentProxy } from "unpdf";
-import { readFile } from "node:fs/promises";
-import { z } from "genkit";
-import { ai, ragIndexer } from "../utils/genkit";
-import { createChunksFromText } from "./chunker";
-import { Document } from "genkit/retriever";
+import {extractText, getDocumentProxy} from "unpdf";
+import {readFile} from "node:fs/promises";
+import {z} from "genkit";
+import {ai, ragIndexer} from "../utils/genkit";
+import {createChunksFromText} from "./chunker";
+import {Document} from "genkit/retriever";
 
 const RAG_CHUNKING_CONFIG = {
   maxLength: 2200,
@@ -21,6 +21,7 @@ const RAG_CHUNKING_CONFIG = {
 export function cleanPDFText(rawText: string): string {
   return rawText
     .normalize("NFKC")
+    // eslint-disable-next-line no-control-regex
     .replace(/[\x00-\x09\x0B\x0C\x0E-\x1F\x7F]/g, "")
     .replace(/[ \t]+/g, " ")
     .replace(/([a-zA-Z])-\s*\n\s*([a-zA-Z])/g, "$1$2")
@@ -41,12 +42,12 @@ export const indexPDF = ai.defineFlow(
       error: z.string().optional(),
     }),
   },
-  async ({ filePath, fileName }) => {
+  async ({filePath, fileName}) => {
     try {
       const buffer = await readFile(filePath);
       const pdf = await getDocumentProxy(new Uint8Array(buffer));
 
-      const { totalPages, text } = await extractText(pdf, { mergePages: true });
+      const {totalPages, text} = await extractText(pdf, {mergePages: true});
       console.log(`Extracted ${totalPages} pages from PDF`);
 
       const cleanedText = cleanPDFText(text);

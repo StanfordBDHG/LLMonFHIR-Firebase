@@ -6,8 +6,8 @@
 // SPDX-License-Identifier: MIT
 //
 
-import { initializeApp } from "firebase-admin/app";
-import { getStorage } from "firebase-admin/storage";
+import {initializeApp} from "firebase-admin/app";
+import {getStorage} from "firebase-admin/storage";
 
 // Initialize Firebase
 initializeApp();

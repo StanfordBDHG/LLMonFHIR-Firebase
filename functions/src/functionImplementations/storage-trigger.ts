@@ -6,12 +6,12 @@
 // SPDX-License-Identifier: MIT
 //
 
-import { onObjectFinalized } from "firebase-functions/v2/storage";
-import { unlink } from "node:fs/promises";
-import { join } from "node:path";
-import { tmpdir } from "node:os";
-import { storage } from "../utils/firebase";
-import { indexPDF } from "../rag/indexer";
+import {onObjectFinalized} from "firebase-functions/v2/storage";
+import {unlink} from "node:fs/promises";
+import {join} from "node:path";
+import {tmpdir} from "node:os";
+import {storage} from "../utils/firebase";
+import {indexPDF} from "../rag/indexer";
 
 const STORAGE_BUCKET =
   process.env.STORAGE_BUCKET || "som-rit-phi-lit-ai-dev.firebasestorage.app";
@@ -47,7 +47,7 @@ export const onPDFUploaded = onObjectFinalized(
       tempFilePath = join(tmpdir(), `pdf-${Date.now()}.pdf`);
       console.log(`[STORAGE] Downloading to: ${tempFilePath}`);
 
-      await file.download({ destination: tempFilePath });
+      await file.download({destination: tempFilePath});
 
       // Extract and index the PDF
       const result = await indexPDF({

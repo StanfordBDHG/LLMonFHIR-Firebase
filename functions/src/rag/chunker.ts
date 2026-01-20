@@ -27,12 +27,13 @@ export const createChunksFromText = (
 
   const numberOfSteps = Math.ceil(text.length / stepSize);
 
-  return Array.from({ length: numberOfSteps }, (_, i) => i * stepSize) // creating an array of [0, stepSize, 2*stepSize, ...]
+  // creating an array of [0, stepSize, 2*stepSize, ...]
+  return Array.from({length: numberOfSteps}, (_, i) => i * stepSize)
     .map((startIndex) => {
       const endIndex = Math.min(startIndex + maxLength, text.length);
       return text.substring(startIndex, endIndex);
     })
     .map((chunk) => chunk.trim())
     .filter(Boolean) // remove empty strings
-    .map((chunk) => ({ text: chunk }));
+    .map((chunk) => ({text: chunk}));
 };
