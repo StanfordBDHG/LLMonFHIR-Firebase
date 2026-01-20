@@ -66,14 +66,14 @@ jobs:
           distribution: 'microsoft'
           java-version: '21'
       - name: Install Dependencies
-        run: npm run install
+        run: npm --prefix functions run install
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
       - name: Build
-        run: npm run build
+        run: npm --prefix functions run build
       - name: Test
         id: test
-        run: npm run test
+        run: npm --prefix functions run test
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
