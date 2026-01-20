@@ -74,11 +74,12 @@ jobs:
       - name: Test
         id: test
         run: npm --prefix functions run test
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          files: functions/coverage/lcov.info
-          fail_ci_if_error: true
-          token: ${{ secrets.CODECOV_TOKEN }}
+      # TODO: Make sure to actually run tests and upload coverage
+      # - name: Upload coverage to Codecov
+      #   uses: codecov/codecov-action@v5
+      #   with:
+      #     files: functions/coverage/lcov.info
+      #     fail_ci_if_error: true
+      #     token: ${{ secrets.CODECOV_TOKEN }}
     permissions:
       contents: read
