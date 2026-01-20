@@ -1,3 +1,11 @@
+//
+// This source file is part of the Stanford Biodesign Digital Health LLMonFHIR- Firebase open-source project
+//
+// SPDX-FileCopyrightText: 2026 Stanford University and the project authors (see CONTRIBUTORS.md)
+//
+// SPDX-License-Identifier: MIT
+//
+
 import { onObjectFinalized } from "firebase-functions/v2/storage";
 import { unlink } from "node:fs/promises";
 import { join } from "node:path";

@@ -1,3 +1,13 @@
+<!--
+
+This source file is part of the Stanford Biodesign Digital Health LLMonFHIR- Firebase open-source project
+
+SPDX-FileCopyrightText: 2026 Stanford University and the project authors (see CONTRIBUTORS.md)
+
+SPDX-License-Identifier: MIT
+
+-->
+
 # LLMonFHIR Firebase Backend
 
 Firebase Functions backend for LLMonFHIR with a RAG-enabled OpenAI-compatible `/chat` endpoint and a lightweight web client for comparison testing.

@@ -39,11 +39,11 @@ jobs:
         with:
           node-version: 24.x
       - name: Install Dependencies
-        run: npm run install
+        run: npm --prefix functions run install
       - name: Build
-        run: npm run build
+        run: npm --prefix functions run build
       - name: Lint
-        run: npm run lint:strict
+        run: npm --prefix functions run lint
     permissions:
       contents: read
   buildandtest:
