@@ -14,3 +14,5 @@ initializeApp();
 
 // Export storage instance for use across the app
 export const storage = getStorage();
+
+export const serviceAccount = `cloud-function-sa@${process.env.GCLOUD_PROJECT}.iam.gserviceaccount.com`;

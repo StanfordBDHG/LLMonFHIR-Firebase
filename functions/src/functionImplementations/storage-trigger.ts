@@ -10,7 +10,7 @@ import {onObjectFinalized} from "firebase-functions/v2/storage";
 import {unlink} from "node:fs/promises";
 import {join} from "node:path";
 import {tmpdir} from "node:os";
-import {storage} from "../utils/firebase";
+import {serviceAccount, storage} from "../utils/firebase";
 import {indexPDF} from "../rag/indexer";
 
 const STORAGE_BUCKET =
@@ -20,6 +20,7 @@ export const onPDFUploaded = onObjectFinalized(
   {
     bucket: STORAGE_BUCKET,
     region: "us-central1",
+    serviceAccount: serviceAccount,
   },
   async (event) => {
     const filePath = event.data.name;
