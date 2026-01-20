@@ -9,7 +9,7 @@
 import {extractText, getDocumentProxy} from "unpdf";
 import {readFile} from "node:fs/promises";
 import {z} from "genkit";
-import {ai, ragIndexer} from "../utils/genkit";
+import {ai, ragRetriever} from "../utils/genkit";
 import {createChunksFromText} from "./chunker";
 import {Document} from "genkit/retriever";
 
@@ -66,7 +66,7 @@ export const indexPDF = ai.defineFlow(
       );
 
       await ai.index({
-        indexer: ragIndexer,
+        indexer: ragRetriever,
         documents,
       });
 

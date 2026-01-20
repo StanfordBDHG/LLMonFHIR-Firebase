@@ -7,6 +7,7 @@
 //
 
 import {initializeApp} from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
 import {getStorage} from "firebase-admin/storage";
 
 // Initialize Firebase
@@ -14,5 +15,6 @@ initializeApp();
 
 // Export storage instance for use across the app
 export const storage = getStorage();
+export const firestore = getFirestore();
 
 export const serviceAccount = `cloud-function-sa@${process.env.GCLOUD_PROJECT}.iam.gserviceaccount.com`;
