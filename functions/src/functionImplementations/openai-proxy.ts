@@ -83,6 +83,8 @@ const openAIAPIKey = defineSecret("OPENAI_API_KEY");
 export const chat = onRequest(
   { secrets: [openAIAPIKey], cors: true },
   async (req, res) => {
+    throw new Error("Disabled for demo deployment");
+    
     if (req.method !== "POST") {
       res.status(405).send("Method Not Allowed");
       return;
