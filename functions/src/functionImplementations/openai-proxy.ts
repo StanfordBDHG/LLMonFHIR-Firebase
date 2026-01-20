@@ -15,6 +15,7 @@ import type {
   ChatCompletionMessageParam,
 } from "openai/resources/chat/completions";
 import {retrieveRAGContext} from "../rag/retriever";
+import {getAuth} from "firebase-admin/auth";
 
 type ChatBody =
   | ChatCompletionCreateParamsStreaming
@@ -83,10 +84,24 @@ const openAIAPIKey = defineSecret("OPENAI_API_KEY");
 export const chat = onRequest(
   {secrets: [openAIAPIKey], cors: true},
   async (req, res) => {
-    throw new Error("Disabled for demo deployment");
-
     if (req.method !== "POST") {
       res.status(405).send("Method Not Allowed");
+      return;
+    }
+
+    // Extract the Authorization header
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader?.startsWith("Bearer ")) {
+      res.status(401).json({error: "Unauthorized"});
+      return;
+    }
+
+    try {
+      const token = authHeader.split("Bearer ")[1];
+      await getAuth().verifyIdToken(token, true);
+    } catch (error) {
+      res.status(401).json({error: "Invalid token"});
       return;
     }
 
