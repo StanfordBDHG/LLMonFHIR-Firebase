@@ -100,6 +100,7 @@ export const chat = onRequest(
     try {
       const token = authHeader.split("Bearer ")[1];
       await getAuth().verifyIdToken(token, true);
+      throw new Error("Token verification successful, but function should not be called yet");
     } catch (error) {
       res.status(401).json({error: "Invalid token"});
       return;
