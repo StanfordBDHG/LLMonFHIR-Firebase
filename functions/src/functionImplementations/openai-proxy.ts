@@ -21,6 +21,8 @@ type ChatBody =
   | ChatCompletionCreateParamsStreaming
   | ChatCompletionCreateParamsNonStreaming;
 
+const shouldFail = true;
+
 // Function to inject RAG context into the messages array
 function injectRAGContext(
   messages: ChatCompletionMessageParam[],
@@ -100,7 +102,9 @@ export const chat = onRequest(
     try {
       const token = authHeader.split("Bearer ")[1];
       await getAuth().verifyIdToken(token, true);
-      throw new Error("Token verification successful, but function should not be called yet");
+      if (shouldFail) {
+        throw new Error("Token verification successful, but function should not be called yet");
+      }
     } catch (error) {
       res.status(401).json({error: "Invalid token"});
       return;
