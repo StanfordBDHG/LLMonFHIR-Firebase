@@ -1,0 +1,84 @@
+#
+# This source file is part of the Stanford Biodesign Digital Health LLMonFHIR- Firebase open-source project
+#
+# SPDX-FileCopyrightText: 2026 Stanford University and the project authors (see CONTRIBUTORS.md)
+#
+# SPDX-License-Identifier: MIT
+#
+
+name: Build and Test
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  reuseaction:
+    name: REUSE Compliance Check
+    uses: StanfordBDHG/.github/.github/workflows/reuse.yml@v2
+  markdownlinkcheck:
+    name: Markdown Link Check
+    uses: StanfordBDHG/.github/.github/workflows/markdown-link-check.yml@v2.3
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: 'true'
+      - name: Git LFS Pull
+        run: git lfs pull
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+      - name: Install Dependencies
+        run: npm run install
+      - name: Build
+        run: npm run build
+      - name: Lint
+        run: npm run lint:strict
+    permissions:
+      contents: read
+  buildandtest:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: 'true'
+      - name: Git LFS Pull
+        run: git lfs pull
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'microsoft'
+          java-version: '21'
+      - name: Install Dependencies
+        run: npm run install
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+      - name: Build
+        run: npm run build
+      - name: Test
+        id: test
+        run: npm run test
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: functions/coverage/lcov.info
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+    permissions:
+      contents: read
