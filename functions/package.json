@@ -2,7 +2,9 @@
   "main": "lib/index.js",
   "scripts": {
     "genkit:start": "genkit start -- tsx --watch src/openai-proxy.ts",
-    "lint": "eslint --ext .js,.ts .",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "lint:strict": "eslint src --max-warnings 0",
     "build": "tsc",
     "build:watch": "tsc --watch",
     "serve": "npm run build && firebase emulators:start --only functions,storage",

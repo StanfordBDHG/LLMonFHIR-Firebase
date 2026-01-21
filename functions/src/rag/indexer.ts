@@ -9,9 +9,8 @@
 import {extractText, getDocumentProxy} from "unpdf";
 import {readFile} from "node:fs/promises";
 import {z} from "genkit";
-import {ai, ragRetriever} from "../utils/genkit";
+import {ai, embedder, ragIndex} from "../utils/genkit";
 import {createChunksFromText} from "./chunker";
-import {Document} from "genkit/retriever";
 
 const RAG_CHUNKING_CONFIG = {
   maxLength: 2200,
@@ -35,6 +34,7 @@ export const indexPDF = ai.defineFlow(
     inputSchema: z.object({
       filePath: z.string().describe("PDF file path"),
       fileName: z.string().describe("PDF filename for metadata"),
+      studyId: z.string().describe("Study ID for organizing embeddings"),
     }),
     outputSchema: z.object({
       success: z.boolean(),
@@ -42,7 +42,7 @@ export const indexPDF = ai.defineFlow(
       error: z.string().optional(),
     }),
   },
-  async ({filePath, fileName}) => {
+  async ({filePath, fileName, studyId}) => {
     try {
       const buffer = await readFile(filePath);
       const pdf = await getDocumentProxy(new Uint8Array(buffer));
@@ -56,18 +56,18 @@ export const indexPDF = ai.defineFlow(
       const chunks = createChunksFromText(cleanedText, RAG_CHUNKING_CONFIG);
       console.log(`Created ${chunks.length} chunks`);
 
-      const documents = chunks.map((chunk, index) =>
-        Document.fromText(chunk.text, {
-          sourceFile: fileName,
-          chunkIndex: index,
-          totalPages,
-          createdAt: Date.now(),
-        }),
-      );
+      const embeddedChunks = await Promise.all(chunks.map((chunk) => ai.embed({
+        embedder: embedder,
+        content: chunk.text,
+      })));
 
-      await ai.index({
-        indexer: ragRetriever,
-        documents,
+      await ragIndex({
+        studyId: studyId,
+        filename: fileName,
+        chunks: embeddedChunks.map((chunkEmbedding, index) => ({
+          text: chunks[index].text,
+          embedding: chunkEmbedding.at(0)?.embedding || [],
+        })),
       });
 
       return {

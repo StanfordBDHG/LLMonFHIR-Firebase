@@ -24,11 +24,11 @@ const formatDoc = (doc: Document): string => {
   return `[Document: ${source} | Chunk ${chunk}]\n${docContent}`;
 };
 
-export async function retrieveRAGContext(query: string): Promise<string> {
+export async function retrieveRAGContext(options: { query: string, studyId: string }): Promise<string> {
   try {
     const docs = await ai.retrieve({
-      retriever: ragRetriever,
-      query,
+      retriever: ragRetriever(options.studyId),
+      query: options.query,
       options: {
         k: RAG_RETRIEVAL_K,
       },
