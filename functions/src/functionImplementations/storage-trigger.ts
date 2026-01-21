@@ -21,7 +21,6 @@ export const onPDFUploaded = onObjectFinalized(
     bucket: STORAGE_BUCKET,
     region: "us-central1",
     serviceAccount: serviceAccount,
-    timeoutSeconds: 600,
   },
   async (event) => {
     const filePathMatch = event.data.name.match(/studies\/(?<studyId>[^/]+)\/rag_files\/(?<fileName>[^/]+\.pdf)/);
