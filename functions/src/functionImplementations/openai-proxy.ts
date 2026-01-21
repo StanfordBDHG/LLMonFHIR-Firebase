@@ -176,7 +176,7 @@ export const chat = onRequest(
         res.setHeader("Connection", "keep-alive");
 
         // Emit RAG context metadata first if available
-        if (ragContext && ragContext.trim()) {
+        if (process.env.OUTPUT_RAG_CONTEXT && ragContext && ragContext.trim()) {
           const ragMetadata = {
             type: "rag_context",
             context: ragContext,
