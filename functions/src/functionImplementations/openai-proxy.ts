@@ -15,13 +15,11 @@ import type {
   ChatCompletionMessageParam,
 } from "openai/resources/chat/completions";
 import {retrieveRAGContext} from "../rag/retriever";
-import {getAuth} from "firebase-admin/auth";
+import {auth, serviceAccount} from "../utils/firebase";
 
 type ChatBody =
   | ChatCompletionCreateParamsStreaming
   | ChatCompletionCreateParamsNonStreaming;
-
-const shouldFail = true;
 
 // Function to inject RAG context into the messages array
 function injectRAGContext(
@@ -84,7 +82,7 @@ const normalizeMessageContent = (
 const openAIAPIKey = defineSecret("OPENAI_API_KEY");
 
 export const chat = onRequest(
-  {secrets: [openAIAPIKey], cors: true},
+  {secrets: [openAIAPIKey], cors: true, serviceAccount: serviceAccount},
   async (req, res) => {
     if (req.method !== "POST") {
       res.status(405).send("Method Not Allowed");
@@ -101,10 +99,7 @@ export const chat = onRequest(
 
     try {
       const token = authHeader.split("Bearer ")[1];
-      await getAuth().verifyIdToken(token, true);
-      if (shouldFail) {
-        throw new Error("Token verification successful, but function should not be called yet");
-      }
+      await auth.verifyIdToken(token, true);
     } catch (error) {
       res.status(401).json({error: "Invalid token"});
       return;
@@ -143,7 +138,10 @@ export const chat = onRequest(
             console.log(
               `[RAG] Retrieving context for user message: "${lastUserMessage.substring(0, 100)}..."`,
             );
-            ragContext = await retrieveRAGContext(lastUserMessage);
+            ragContext = await retrieveRAGContext({
+              query: lastUserMessage,
+              studyId: "spineai",
+            });
             if (ragContext && ragContext.trim()) {
               console.log(
                 `[RAG] Retrieved context length: ${ragContext.length}`,
@@ -176,7 +174,7 @@ export const chat = onRequest(
         res.setHeader("Connection", "keep-alive");
 
         // Emit RAG context metadata first if available
-        if (ragContext && ragContext.trim()) {
+        if (process.env.OUTPUT_RAG_CONTEXT && ragContext && ragContext.trim()) {
           const ragMetadata = {
             type: "rag_context",
             context: ragContext,

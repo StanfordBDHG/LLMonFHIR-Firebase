@@ -10,7 +10,7 @@ import {onObjectFinalized} from "firebase-functions/v2/storage";
 import {unlink} from "node:fs/promises";
 import {join} from "node:path";
 import {tmpdir} from "node:os";
-import {storage} from "../utils/firebase";
+import {serviceAccount, storage} from "../utils/firebase";
 import {indexPDF} from "../rag/indexer";
 
 const STORAGE_BUCKET =
@@ -20,23 +20,28 @@ export const onPDFUploaded = onObjectFinalized(
   {
     bucket: STORAGE_BUCKET,
     region: "us-central1",
+    serviceAccount: serviceAccount,
+    timeoutSeconds: 540,
   },
   async (event) => {
-    const filePath = event.data.name;
-    const contentType = event.data.contentType;
+    const filePathMatch = event.data.name.match(/studies\/(?<studyId>[^/]+)\/rag_files\/(?<fileName>[^/]+\.pdf)/);
+    const studyId = filePathMatch?.groups?.studyId;
+    const fileName = filePathMatch?.groups?.fileName;
 
-    const isPDFFile =
-      filePath.endsWith(".pdf") && contentType === "application/pdf";
-    const isRelevantFilePath = filePath.startsWith("rag_files/");
+    if (!filePathMatch || !studyId || !fileName) {
+      console.log(`[STORAGE] No file path match for: ${event.data.name}`);
+      return;
+    }
 
-    if (!filePath || !(isRelevantFilePath && isPDFFile)) {
+    if (event.data.contentType !== "application/pdf") {
       console.log(
-        `[STORAGE] Skipping file outside rag_files or non-PDF: ${filePath ?? "Unknown"}`,
+        `[STORAGE] Skipping non-PDF file: ${event.data.name} (${event.data.contentType})`,
       );
       return;
     }
 
-    console.log(`[STORAGE] Processing PDF: ${filePath}`);
+    const filePath = event.data.name;
+    console.log(`[STORAGE] Processing PDF ${fileName} for study ${studyId}`);
 
     let tempFilePath;
     try {
@@ -53,6 +58,7 @@ export const onPDFUploaded = onObjectFinalized(
       const result = await indexPDF({
         filePath: tempFilePath,
         fileName: filePath,
+        studyId,
       });
 
       console.log(`[STORAGE] Completed processing: ${filePath}`, result);

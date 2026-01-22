@@ -79,7 +79,7 @@ jobs:
     permissions:
       contents: read
     with:
-      customcommand: "npm install"
+      customcommand: "npm --prefix functions install"
       environment: ${{ needs.determineenvironment.outputs.environment }}
       arguments: '--project ${{ needs.vars.outputs.FIREBASE_PROJECT_ID }}'
     secrets:
