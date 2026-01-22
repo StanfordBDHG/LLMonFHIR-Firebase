@@ -21,8 +21,6 @@ type ChatBody =
   | ChatCompletionCreateParamsStreaming
   | ChatCompletionCreateParamsNonStreaming;
 
-// const shouldFail = true;
-
 // Function to inject RAG context into the messages array
 function injectRAGContext(
   messages: ChatCompletionMessageParam[],
