@@ -1,0 +1,10 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /reports/{studyId}/{allPaths=**} {
+      // Deny everything except creating (uploading) new files.
+      allow read, update, delete: if false;
+      allow create: if true;
+    }
+  }
+}
