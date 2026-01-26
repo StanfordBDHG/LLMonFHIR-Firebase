@@ -30,7 +30,7 @@ export async function retrieveRAGContext(options: { query: string, studyId: stri
       retriever: ragRetriever(options.studyId),
       query: options.query,
       options: {
-        k: RAG_RETRIEVAL_K,
+        limit: RAG_RETRIEVAL_K,
       },
     });
 

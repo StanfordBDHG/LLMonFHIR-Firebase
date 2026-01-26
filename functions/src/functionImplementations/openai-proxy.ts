@@ -109,7 +109,7 @@ export const chat = onRequest(
     }
 
     try {
-      const apiKey = process.env.OPENAI_API_KEY;
+      const apiKey = openAIAPIKey.value();
       if (!apiKey) {
         console.error("Server error: OPENAI_API_KEY not configured");
         res.status(500).json({error: "OPENAI_API_KEY not configured"});
