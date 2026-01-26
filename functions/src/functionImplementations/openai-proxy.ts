@@ -103,7 +103,7 @@ export const chat = onRequest(
       const token = authHeader.split("Bearer ")[1];
       await auth.verifyIdToken(token, true);
     } catch (error) {
-      console.error("Unauthorized: Missing or token");
+      console.error("Unauthorized: Failed to verify ID token", error);
       res.status(401).json({error: "Invalid token"});
       return;
     }
