@@ -85,6 +85,7 @@ export const chat = onRequest(
   {secrets: [openAIAPIKey], cors: true, serviceAccount: serviceAccount},
   async (req, res) => {
     if (req.method !== "POST") {
+      console.error("Called with non-POST method:", req.method);
       res.status(405).send("Method Not Allowed");
       return;
     }
@@ -93,6 +94,7 @@ export const chat = onRequest(
     const authHeader = req.headers.authorization;
 
     if (!authHeader?.startsWith("Bearer ")) {
+      console.error("Unauthorized: Missing or invalid Authorization header");
       res.status(401).json({error: "Unauthorized"});
       return;
     }
@@ -101,6 +103,7 @@ export const chat = onRequest(
       const token = authHeader.split("Bearer ")[1];
       await auth.verifyIdToken(token, true);
     } catch (error) {
+      console.error("Unauthorized: Missing or token");
       res.status(401).json({error: "Invalid token"});
       return;
     }
@@ -108,6 +111,7 @@ export const chat = onRequest(
     try {
       const apiKey = process.env.OPENAI_API_KEY;
       if (!apiKey) {
+        console.error("Server error: OPENAI_API_KEY not configured");
         res.status(500).json({error: "OPENAI_API_KEY not configured"});
         return;
       }
