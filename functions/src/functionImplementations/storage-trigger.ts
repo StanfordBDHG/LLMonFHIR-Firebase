@@ -12,6 +12,7 @@ import {join} from "node:path";
 import {tmpdir} from "node:os";
 import {serviceAccount, storage} from "../utils/firebase";
 import {indexPDF} from "../rag/indexer";
+import {randomUUID} from "node:crypto";
 
 const STORAGE_BUCKET =
   process.env.STORAGE_BUCKET || "som-rit-phi-lit-ai-dev.firebasestorage.app";
@@ -49,7 +50,7 @@ export const onPDFUploaded = onObjectFinalized(
       const file = bucket.file(filePath);
 
       // Download file to temporary location
-      tempFilePath = join(tmpdir(), `pdf-${Date.now()}.pdf`);
+      tempFilePath = join(tmpdir(), `${randomUUID()}.pdf`);
       console.log(`[STORAGE] Downloading to: ${tempFilePath}`);
 
       await file.download({destination: tempFilePath});
