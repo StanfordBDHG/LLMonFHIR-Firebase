@@ -9,7 +9,7 @@
 import {Document} from "genkit";
 import {ai, ragRetriever} from "../utils/genkit";
 
-export const RAG_RETRIEVAL_K = 5;
+export const RAG_RETRIEVAL_LIMIT = 5;
 
 const formatDoc = (doc: Document): string => {
   const metadata = doc.metadata;
@@ -30,7 +30,7 @@ export async function retrieveRAGContext(options: { query: string, studyId: stri
       retriever: ragRetriever(options.studyId),
       query: options.query,
       options: {
-        limit: RAG_RETRIEVAL_K,
+        limit: RAG_RETRIEVAL_LIMIT,
       },
     });
 
