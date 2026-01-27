@@ -6,7 +6,7 @@
 // SPDX-License-Identifier: MIT
 //
 
-import {onCall} from "firebase-functions/https";
+import {HttpsError, onCall} from "firebase-functions/https";
 import {defineSecret} from "firebase-functions/params";
 import OpenAI from "openai";
 import type {
@@ -88,7 +88,7 @@ export const chat = onCall(
       const apiKey = openAIAPIKey.value();
       if (!apiKey) {
         console.error("Server error: OPENAI_API_KEY not configured");
-        throw new Error("OPENAI_API_KEY not configured");
+        throw new HttpsError("internal", "OPENAI_API_KEY not configured");
       }
 
       const openai = new OpenAI({apiKey});
@@ -203,7 +203,7 @@ export const chat = onCall(
           },
         } :
         {error: {message: fallbackMessage, type: "server_error"}};
-        
+
       const streamMessage =
           error instanceof Error ? error.message : "Streaming error";
         const streamPayload = isOpenAIError ?
