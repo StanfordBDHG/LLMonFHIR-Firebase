@@ -146,7 +146,6 @@ export const chat = onCall(
       chatBody.messages = augmentedMessages;
 
       if (chatBody?.stream) {
-        console.log("Starting streaming response...");
         // Set streaming headers
 
         // Emit RAG context metadata first if available
@@ -204,13 +203,7 @@ export const chat = onCall(
           },
         } :
         {error: {message: fallbackMessage, type: "server_error"}};
-
-      // if (!res.headersSent) {
-      //   const status = isOpenAIError ? error.status : 500;
-      //   res.status(status).json(payload);
-      //   return;
-      // }
-
+        
       const streamMessage =
           error instanceof Error ? error.message : "Streaming error";
         const streamPayload = isOpenAIError ?
