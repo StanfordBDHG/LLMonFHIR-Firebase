@@ -206,10 +206,10 @@ export const chat = onCall(
 
       const streamMessage =
           error instanceof Error ? error.message : "Streaming error";
-        const streamPayload = isOpenAIError ?
-          payload :
-          {error: {message: streamMessage, type: "stream_error"}};
-        return `data: ${JSON.stringify(streamPayload)}\n\ndata: [DONE]\n\n`;
+      const streamPayload = isOpenAIError ?
+        payload :
+        {error: {message: streamMessage, type: "stream_error"}};
+      return `data: ${JSON.stringify(streamPayload)}\n\ndata: [DONE]\n\n`;
     }
   },
 );
