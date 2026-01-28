@@ -15,7 +15,7 @@ import type {
   ChatCompletionMessageParam,
 } from "openai/resources/chat/completions";
 import {retrieveRAGContext} from "../rag/retriever";
-import {auth, serviceAccount} from "../utils/firebase";
+import {serviceAccount} from "../utils/firebase";
 
 type ChatBody =
   | ChatCompletionCreateParamsStreaming
