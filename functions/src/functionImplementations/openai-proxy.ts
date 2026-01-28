@@ -82,7 +82,7 @@ const normalizeMessageContent = (
 const openAIAPIKey = defineSecret("OPENAI_API_KEY");
 
 export const chat = onCall(
-  {secrets: [openAIAPIKey], serviceAccount: serviceAccount, invoker: "public"},
+  {secrets: [openAIAPIKey], serviceAccount: serviceAccount},
   async (req, res) => {
     try {
       const apiKey = openAIAPIKey.value();
