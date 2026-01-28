@@ -15,7 +15,8 @@ import type {
   ChatCompletionTool,
 } from "openai/resources/chat/completions";
 import { initializeApp } from "firebase/app";
-import { getFunctions, httpsCallable } from "firebase/functions";
+import { connectFunctionsEmulator, getFunctions, httpsCallable } from "firebase/functions";
+import { connectAuthEmulator, getAuth, initializeAuth, signInAnonymously } from "firebase/auth";
 
 export interface RagContextInfo {
   context: string;
@@ -31,8 +32,17 @@ export interface Message {
 }
 
 const app = initializeApp({
+  apiKey: "A00000000000000000000000000000000000000",
+  appId: "1:123456789012:ios:1234567890123456789012",
+  messagingSenderId: "GCM_SENDER_ID",
   projectId: "som-rit-phi-lit-ai-dev",
 });
+
+const auth = initializeAuth(app, {});
+connectAuthEmulator(auth, "http://localhost:9099");
+
+const functions = getFunctions(app);
+connectFunctionsEmulator(functions, "localhost", 5001);
 
 const createOpenAIClient = (ragEnabled: boolean) => {
   const customFetch = async (
@@ -41,7 +51,7 @@ const createOpenAIClient = (ragEnabled: boolean) => {
   ): Promise<Response> => {
     const urlString = typeof url === "string" ? url : url.toString();
     if (urlString.includes("/v1/chat/completions")) {
-      const functions = getFunctions(app);
+      await signInAnonymously(auth);
       const callable = httpsCallable(functions, ragEnabled ? "chat" : "chat?ragEnabled=false");
       const {stream, data} = await callable.stream(init?.body);
       const responseStream = new ReadableStream({
