@@ -6,7 +6,7 @@
 // SPDX-License-Identifier: MIT
 //
 
-import {onRequest} from "firebase-functions/https";
+import {HttpsError, onCall} from "firebase-functions/https";
 import {defineSecret} from "firebase-functions/params";
 import OpenAI from "openai";
 import type {
@@ -15,7 +15,7 @@ import type {
   ChatCompletionMessageParam,
 } from "openai/resources/chat/completions";
 import {retrieveRAGContext} from "../rag/retriever";
-import {auth, serviceAccount} from "../utils/firebase";
+import {serviceAccount} from "../utils/firebase";
 
 type ChatBody =
   | ChatCompletionCreateParamsStreaming
@@ -81,49 +81,28 @@ const normalizeMessageContent = (
 
 const openAIAPIKey = defineSecret("OPENAI_API_KEY");
 
-export const chat = onRequest(
-  {secrets: [openAIAPIKey], cors: true, serviceAccount: serviceAccount},
+export const chat = onCall(
+  {secrets: [openAIAPIKey], serviceAccount: serviceAccount},
   async (req, res) => {
-    if (req.method !== "POST") {
-      console.error("Called with non-POST method:", req.method);
-      res.status(405).send("Method Not Allowed");
-      return;
-    }
-
-    // Extract the Authorization header
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader?.startsWith("Bearer ")) {
-      console.error("Unauthorized: Missing or invalid Authorization header");
-      res.status(401).json({error: "Unauthorized"});
-      return;
-    }
-
-    try {
-      const token = authHeader.split("Bearer ")[1];
-      await auth.verifyIdToken(token, true);
-    } catch (error) {
-      console.error("Unauthorized: Failed to verify ID token", error);
-      res.status(401).json({error: "Invalid token"});
-      return;
+    if (!req.auth?.token) {
+      throw new HttpsError("unauthenticated", "User must be authenticated");
     }
 
     try {
       const apiKey = openAIAPIKey.value();
       if (!apiKey) {
         console.error("Server error: OPENAI_API_KEY not configured");
-        res.status(500).json({error: "OPENAI_API_KEY not configured"});
-        return;
+        throw new HttpsError("internal", "OPENAI_API_KEY not configured");
       }
 
       const openai = new OpenAI({apiKey});
 
       // Expects OpenAI streaming or non-streaming request
-      const chatBody = req.body as ChatBody;
+      const chatBody = JSON.parse(req.data) as ChatBody;
 
       // Parse ragEnabled query parameter (default: true)
       // Note: This is for testing purposes
-      const ragEnabled = req.query.ragEnabled !== "false";
+      const ragEnabled = req.rawRequest.query.ragEnabled !== "false";
       console.log(`[RAG] RAG enabled: ${ragEnabled}`);
 
       // RAG: Retrieve context for the last user message
@@ -172,10 +151,6 @@ export const chat = onRequest(
 
       if (chatBody?.stream) {
         // Set streaming headers
-        res.setHeader("Access-Control-Allow-Origin", "*");
-        res.setHeader("Content-Type", "text/event-stream");
-        res.setHeader("Cache-Control", "no-cache");
-        res.setHeader("Connection", "keep-alive");
 
         // Emit RAG context metadata first if available
         if (process.env.OUTPUT_RAG_CONTEXT && ragContext && ragContext.trim()) {
@@ -185,16 +160,15 @@ export const chat = onRequest(
             contextLength: ragContext.length,
             enabled: ragEnabled,
           };
-          res.write(`data: ${JSON.stringify(ragMetadata)}\n\n`);
+          res?.sendChunk(`data: ${JSON.stringify(ragMetadata)}\n\n`);
         }
 
         const stream = await openai.chat.completions.create(chatBody);
         for await (const chunk of stream) {
-          res.write(`data: ${JSON.stringify(chunk)}\n\n`);
+          res?.sendChunk(`data: ${JSON.stringify(chunk)}\n\n`);
         }
 
-        res.write("data: [DONE]\n\n");
-        res.end();
+        res?.sendChunk("data: [DONE]\n\n");
         return;
       }
 
@@ -213,7 +187,7 @@ export const chat = onRequest(
             null,
       };
 
-      res.json(responseWithRAG);
+      return JSON.stringify(responseWithRAG);
     } catch (error: unknown) {
       console.error("Error in chat endpoint:", error);
 
@@ -234,22 +208,12 @@ export const chat = onRequest(
         } :
         {error: {message: fallbackMessage, type: "server_error"}};
 
-      if (!res.headersSent) {
-        const status = isOpenAIError ? error.status : 500;
-        res.status(status).json(payload);
-        return;
-      }
-
-      if (res.writable) {
-        const streamMessage =
+      const streamMessage =
           error instanceof Error ? error.message : "Streaming error";
-        const streamPayload = isOpenAIError ?
-          payload :
-          {error: {message: streamMessage, type: "stream_error"}};
-        res.write(`data: ${JSON.stringify(streamPayload)}\n\n`);
-        res.write("data: [DONE]\n\n");
-        res.end();
-      }
+      const streamPayload = isOpenAIError ?
+        payload :
+        {error: {message: streamMessage, type: "stream_error"}};
+      return `data: ${JSON.stringify(streamPayload)}\n\ndata: [DONE]\n\n`;
     }
   },
 );
