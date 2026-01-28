@@ -15,7 +15,7 @@ import type {
   ChatCompletionMessageParam,
 } from "openai/resources/chat/completions";
 import {retrieveRAGContext} from "../rag/retriever";
-import {serviceAccount} from "../utils/firebase";
+import {auth, serviceAccount} from "../utils/firebase";
 
 type ChatBody =
   | ChatCompletionCreateParamsStreaming
@@ -84,6 +84,10 @@ const openAIAPIKey = defineSecret("OPENAI_API_KEY");
 export const chat = onCall(
   {secrets: [openAIAPIKey], serviceAccount: serviceAccount},
   async (req, res) => {
+    if (!req.auth?.token) {
+      throw new HttpsError("unauthenticated", "User must be authenticated");
+    }
+
     try {
       const apiKey = openAIAPIKey.value();
       if (!apiKey) {
