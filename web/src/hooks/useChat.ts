@@ -14,6 +14,8 @@ import type {
   ChatCompletionMessageToolCall,
   ChatCompletionTool,
 } from "openai/resources/chat/completions";
+import { initializeApp } from "firebase/app";
+import { getFunctions, httpsCallable } from "firebase/functions";
 
 export interface RagContextInfo {
   context: string;
@@ -28,17 +30,9 @@ export interface Message {
   tool_call_id?: string;
 }
 
-// API URL configuration
-const FIREBASE_FUNCTION_URL =
-  import.meta.env.MODE === "production"
-    ? "https://us-central1-som-rit-phi-lit-ai-dev.cloudfunctions.net/chat"
-    : "http://localhost:5001/som-rit-phi-lit-ai-dev/us-central1/chat";
-
-const getApiUrl = (ragEnabled: boolean) => {
-  return ragEnabled
-    ? FIREBASE_FUNCTION_URL
-    : `${FIREBASE_FUNCTION_URL}?ragEnabled=false`;
-};
+const app = initializeApp({
+  projectId: "som-rit-phi-lit-ai-dev",
+});
 
 const createOpenAIClient = (ragEnabled: boolean) => {
   const customFetch = async (
@@ -47,7 +41,29 @@ const createOpenAIClient = (ragEnabled: boolean) => {
   ): Promise<Response> => {
     const urlString = typeof url === "string" ? url : url.toString();
     if (urlString.includes("/v1/chat/completions")) {
-      return fetch(getApiUrl(ragEnabled), init);
+      const functions = getFunctions(app);
+      const callable = httpsCallable(functions, ragEnabled ? "chat" : "chat?ragEnabled=false");
+      const {stream, data} = await callable.stream(init?.body);
+      const responseStream = new ReadableStream({
+        start: async (controller) => {
+          try {
+            for await (const chunk of stream) {
+              controller.enqueue(new TextEncoder().encode(chunk as string));
+            }
+            const result = await data;
+            controller.enqueue(new TextEncoder().encode(result as string));
+            controller.close();
+          } catch (error) {
+            controller.error(error);
+          }
+        }
+      });
+
+      return new Response(responseStream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+        },
+      });
     }
     return fetch(url, init);
   };
