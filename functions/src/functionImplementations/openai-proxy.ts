@@ -16,6 +16,7 @@ import type {
 } from "openai/resources/chat/completions";
 import {retrieveRAGContext} from "../rag/retriever";
 import {serviceAccount} from "../utils/firebase";
+import { openAIAPIKey } from "../utils/genkit";
 
 type ChatBody =
   | ChatCompletionCreateParamsStreaming
@@ -78,8 +79,6 @@ const normalizeMessageContent = (
     .filter(Boolean)
     .join(" ");
 };
-
-const openAIAPIKey = defineSecret("OPENAI_API_KEY");
 
 export const chat = onCall(
   {secrets: [openAIAPIKey], serviceAccount: serviceAccount},
