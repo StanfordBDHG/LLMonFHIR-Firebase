@@ -26,7 +26,7 @@ const formatDoc = (doc: Document): string => {
 
 export async function retrieveRAGContext(options: { query: string, studyId: string }): Promise<string> {
   try {
-    const docs = await ai.retrieve({
+    const docs = await ai().retrieve({
       retriever: ragRetriever(options.studyId),
       query: options.query,
       options: {
