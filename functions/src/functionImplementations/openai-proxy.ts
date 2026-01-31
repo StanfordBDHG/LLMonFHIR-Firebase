@@ -7,7 +7,6 @@
 //
 
 import {HttpsError, onCall} from "firebase-functions/https";
-import {defineSecret} from "firebase-functions/params";
 import OpenAI from "openai";
 import type {
   ChatCompletionCreateParamsStreaming,
@@ -16,7 +15,7 @@ import type {
 } from "openai/resources/chat/completions";
 import {retrieveRAGContext} from "../rag/retriever";
 import {serviceAccount} from "../utils/firebase";
-import { openAIAPIKey } from "../utils/genkit";
+import {openAIAPIKey} from "../utils/genkit";
 
 type ChatBody =
   | ChatCompletionCreateParamsStreaming

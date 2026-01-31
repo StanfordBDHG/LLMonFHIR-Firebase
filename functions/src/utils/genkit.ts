@@ -19,7 +19,7 @@ const VECTOR_STORE_NAME = "rag-chunks";
 
 export const ai = genkit({
   plugins: [
-    openAI({ apiKey: openAIAPIKey.value() }),
+    openAI({apiKey: openAIAPIKey.value()}),
   ],
 });
 

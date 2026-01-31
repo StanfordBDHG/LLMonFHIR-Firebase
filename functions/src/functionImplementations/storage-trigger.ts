@@ -13,7 +13,7 @@ import {tmpdir} from "node:os";
 import {serviceAccount, storage} from "../utils/firebase";
 import {indexPDF} from "../rag/indexer";
 import {randomUUID} from "node:crypto";
-import { openAIAPIKey } from "../utils/genkit";
+import {openAIAPIKey} from "../utils/genkit";
 
 const STORAGE_BUCKET =
   process.env.STORAGE_BUCKET || "som-rit-phi-lit-ai-dev.firebasestorage.app";
