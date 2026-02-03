@@ -58,7 +58,7 @@ export const onPDFUploaded = onObjectFinalized(
       await file.download({destination: tempFilePath});
 
       // Extract and index the PDF
-      const result = await indexPDF({
+      const result = await indexPDF()({
         filePath: tempFilePath,
         fileName: filePath,
         studyId,

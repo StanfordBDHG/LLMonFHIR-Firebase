@@ -28,7 +28,7 @@ export function cleanPDFText(rawText: string): string {
     .trim();
 }
 
-export const indexPDF = ai().defineFlow(
+export const indexPDF = () => ai().defineFlow(
   {
     name: "indexPDF",
     inputSchema: z.object({
