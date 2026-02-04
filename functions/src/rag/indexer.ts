@@ -28,7 +28,7 @@ export function cleanPDFText(rawText: string): string {
     .trim();
 }
 
-export const indexPDF = ai.defineFlow(
+export const indexPDF = () => ai().defineFlow(
   {
     name: "indexPDF",
     inputSchema: z.object({
@@ -56,7 +56,7 @@ export const indexPDF = ai.defineFlow(
       const chunks = createChunksFromText(cleanedText, RAG_CHUNKING_CONFIG);
       console.log(`Created ${chunks.length} chunks`);
 
-      const embeddedChunks = await Promise.all(chunks.map((chunk) => ai.embed({
+      const embeddedChunks = await Promise.all(chunks.map((chunk) => ai().embed({
         embedder: embedder,
         content: chunk.text,
       })));

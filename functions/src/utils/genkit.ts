@@ -11,13 +11,15 @@ import {openAI} from "@genkit-ai/compat-oai/openai";
 import {defineFirestoreRetriever} from "@genkit-ai/firebase";
 import {firestore} from "./firebase";
 import {FieldValue} from "firebase-admin/firestore";
+import {defineSecret} from "firebase-functions/params";
 
+export const openAIAPIKey = defineSecret("OPENAI_API_KEY");
 export const embedder = openAI.embedder("text-embedding-3-small");
 const VECTOR_STORE_NAME = "rag-chunks";
 
-export const ai = genkit({
+export const ai = () => genkit({
   plugins: [
-    openAI({}),
+    openAI({apiKey: openAIAPIKey.value()}),
   ],
 });
 
@@ -26,7 +28,7 @@ function collectionForStudy(studyId: string) {
 }
 
 export function ragRetriever(studyId: string): RetrieverAction {
-  return defineFirestoreRetriever(ai, {
+  return defineFirestoreRetriever(ai(), {
     name: VECTOR_STORE_NAME,
     firestore: firestore,
     collection: collectionForStudy(studyId),
@@ -58,7 +60,6 @@ export async function ragIndex(options: { studyId: string, filename: string, chu
       "embedding": FieldValue.vector(chunk.embedding ?? undefined),
       "file": options.filename,
       "chunkId": index,
-    }
-    );
+    });
   }));
 }
