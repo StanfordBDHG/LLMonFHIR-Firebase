@@ -25,6 +25,7 @@ export const onPDFUploaded = onObjectFinalized(
     secrets: [openAIAPIKey],
     serviceAccount: serviceAccount,
     timeoutSeconds: 540,
+    memory: "512MiB",
   },
   async (event) => {
     const filePathMatch = event.data.name.match(/studies\/(?<studyId>[^/]+)\/rag_files\/(?<fileName>[^/]+\.pdf)/);
@@ -48,7 +49,7 @@ export const onPDFUploaded = onObjectFinalized(
 
     let tempFilePath;
     try {
-      const bucket = storage.bucket();
+      const bucket = storage.bucket(event.data.bucket);
       const file = bucket.file(filePath);
 
       // Download file to temporary location
