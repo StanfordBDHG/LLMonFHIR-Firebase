@@ -16,7 +16,6 @@ import type {
 import {retrieveRAGContext} from "../rag/retriever";
 import {serviceAccount} from "../utils/firebase";
 import {openAIAPIKey} from "../utils/genkit";
-import {z} from "genkit";
 
 type ChatBody =
   | ChatCompletionCreateParamsStreaming
@@ -105,7 +104,7 @@ export const chat = onCall(
       console.log(`[RAG] RAG enabled: ${ragEnabled}`);
 
       const studyId = req.rawRequest.query.studyId;
-      if (typeof studyId !== 'string' || !studyId) {
+      if (typeof studyId !== "string" || !studyId) {
         throw new HttpsError("invalid-argument", "Missing or invalid studyId query parameter");
       }
 
