@@ -1,7 +1,7 @@
 import {Chunk} from "./chunk";
 import {FileChunkingStrategy} from "./chunking-strategy";
-import {TextChunker} from "./extraction/text-chunker";
-import {TextExtractor} from "./extraction/text-extractor";
+import {TextChunker} from "./text-chunking/text-chunker";
+import {TextExtractor} from "./text-extraction/text-extractor";
 
 /**
  * Composes a {@link TextExtractor} with a {@link TextChunker} to form a

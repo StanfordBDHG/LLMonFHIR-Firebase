@@ -1,4 +1,4 @@
-import {TextChunker} from "./extraction/text-chunker";
+import {TextChunker} from "./text-chunker";
 
 /** Splits text into overlapping fixed-size windows. */
 export class SlidingWindowTextChunker implements TextChunker {
