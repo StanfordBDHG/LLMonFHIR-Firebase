@@ -8,7 +8,7 @@ import {RAGChatInterceptor} from "../chat/rag-chat-interceptor";
 import {FileChunkingStrategy} from "../chunking/chunking-strategy";
 import {ComposedChunkingStrategy} from "../chunking/composed-chunking-strategy";
 import {PdfTextExtractor} from "../chunking/text-extraction/pdf-text-extractor";
-import {SlidingWindowTextChunker} from "../chunking/text-chunking/sliding-window-text-chunker";
+import {StructureAwareTextChunker} from "../chunking/text-chunking/structure-aware-text-chunker";
 import {ContextStore} from "../context/context-store";
 import {FirestoreContextStore} from "../context/firestore-context-store";
 import {EmbeddingService} from "../embedding/embedding-service";
@@ -39,10 +39,10 @@ export class DefaultServiceFactory implements ServiceFactory {
     // Embedding service
     this.embeddingService = new GenkitEmbeddingService(ai);
 
-    // Chunking: PDF text extraction → sliding-window text chunking
+    // Chunking: PDF text extraction → structure-aware text chunking
     this.chunkingStrategy = new ComposedChunkingStrategy(
       new PdfTextExtractor(),
-      new SlidingWindowTextChunker(),
+      new StructureAwareTextChunker(),
     );
 
     // Indexing pipeline: chunk → embed → store
