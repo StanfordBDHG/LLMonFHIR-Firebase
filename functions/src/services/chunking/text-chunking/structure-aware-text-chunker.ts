@@ -68,10 +68,6 @@ export class StructureAwareTextChunker implements TextChunker {
     return result;
   }
 
-  /**
-   * Recursively splits text that exceeds maxLength:
-   * paragraph → sentence → hard split.
-   */
   private splitOversized(text: string): string[] {
     if (text.length <= this.maxLength) return [text];
 
@@ -106,7 +102,6 @@ export class StructureAwareTextChunker implements TextChunker {
 
 // ── Paragraph splitting ───────────────────────────────────────────────────
 
-/** Splits on two or more consecutive newlines (the universal paragraph break). */
 function splitByParagraphs(text: string): string[] {
   return text
     .split(/\n{2,}/)
@@ -116,18 +111,6 @@ function splitByParagraphs(text: string): string[] {
 
 // ── Sentence splitting ────────────────────────────────────────────────────
 
-/**
- * Splits text into sentences while avoiding false positives on:
- * - Decimal numbers:          "3.5 mg", "p < 0.05"
- * - Numbered references:      "Fig. 2", "Tab. 3", "Ref. 4"
- * - Academic abbreviations:   "et al.", "vs.", "etc.", "e.g.", "i.e."
- * - Titles / honorifics:      "Dr.", "Prof.", "Mr.", "Mrs.", "Ms.", "Jr.", "Sr."
- * - Unit abbreviations:       "approx.", "ca.", "no."
- *
- * The regex uses a negative look-behind to skip these cases — it only
- * splits after a period that is preceded by at least two letters (not
- * digits), or after `!` / `?`, followed by whitespace.
- */
 function splitBySentences(text: string): string[] {
   // Step 1: protect known abbreviations by replacing their dots with a
   //         placeholder that won't match the split regex.
@@ -198,7 +181,6 @@ function escapeRegExp(s: string): string {
 
 // ── Hard split (last resort) ──────────────────────────────────────────────
 
-/** Character-level split for the rare case where a single sentence exceeds maxLength. */
 function hardSplit(text: string, maxLength: number): string[] {
   const chunks: string[] = [];
   for (let i = 0; i < text.length; i += maxLength) {

@@ -9,8 +9,17 @@
 import {HttpsError, onCall} from "firebase-functions/https";
 import OpenAI from "openai";
 import {Secrets, SERVICE_ACCOUNT} from "../env";
-import {getServiceFactory} from "../services/factory/get-service-factory";
-import {ChatBody} from "../services/chat/chat-service";
+import {ChatBody, ChatService} from "../services/chat/chat-service";
+import {createChatService} from "../services/create-services";
+
+let chatService: ChatService | undefined;
+
+function getChatService(): ChatService {
+  return chatService ??= createChatService({
+    studyId: "spineai",
+    openAiApiKey: Secrets.OPENAI_API_KEY.value(),
+  });
+}
 
 export const chat = onCall(
   {secrets: [Secrets.OPENAI_API_KEY], serviceAccount: SERVICE_ACCOUNT},
@@ -22,12 +31,7 @@ export const chat = onCall(
     const chatBody = JSON.parse(req.data) as ChatBody;
 
     try {
-      const factory = getServiceFactory({
-        studyId: "spineai",
-        openAiApiKey: Secrets.OPENAI_API_KEY.value(),
-      });
-
-      return await factory.chatService.chat(
+      return await getChatService().chat(
         chatBody,
         res ? (chunk) => res.sendChunk(chunk) : undefined,
       );
@@ -47,17 +51,17 @@ function formatErrorResponse(error: unknown, isStreaming: boolean): string {
   const fallbackMessage =
     error instanceof Error ? error.message : "Internal server error";
 
-  const payload = isOpenAIError
-    ? {
-        error: {
-          message:
+  const payload = isOpenAIError ?
+    {
+      error: {
+        message:
             openAIError?.message ?? apiError?.message ?? "OpenAI error",
-          type: openAIError?.type ?? "openai_error",
-          code: openAIError?.code ?? null,
-          param: openAIError?.param ?? null,
-        },
-      }
-    : {error: {message: fallbackMessage, type: "server_error"}};
+        type: openAIError?.type ?? "openai_error",
+        code: openAIError?.code ?? null,
+        param: openAIError?.param ?? null,
+      },
+    } :
+    {error: {message: fallbackMessage, type: "server_error"}};
 
   if (isStreaming) {
     return `data: ${JSON.stringify(payload)}\n\ndata: [DONE]\n\n`;

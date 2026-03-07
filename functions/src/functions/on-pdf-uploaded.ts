@@ -13,7 +13,7 @@ import {tmpdir} from "node:os";
 import {randomUUID} from "node:crypto";
 import {getStorage} from "firebase-admin/storage";
 import {Secrets, SERVICE_ACCOUNT, STORAGE_BUCKET} from "../env";
-import {getServiceFactory} from "../services/factory/get-service-factory";
+import {createIndexingService} from "../services/create-services";
 
 const FILE_PATH_PATTERN =
   /studies\/(?<studyId>[^/]+)\/rag_files\/(?<fileName>[^/]+\.pdf)/;
@@ -52,12 +52,12 @@ export const onPDFUploaded = onObjectFinalized(
       tempFilePath = join(tmpdir(), `${randomUUID()}.pdf`);
       await bucket.file(event.data.name).download({destination: tempFilePath});
 
-      const factory = getServiceFactory({
+      const indexingService = createIndexingService({
         studyId,
         openAiApiKey: Secrets.OPENAI_API_KEY.value(),
       });
 
-      const result = await factory.indexingService.index(
+      const result = await indexingService.index(
         tempFilePath,
         event.data.name,
       );
@@ -69,7 +69,9 @@ export const onPDFUploaded = onObjectFinalized(
       console.error(`[Storage] Error processing ${event.data.name}:`, error);
     } finally {
       if (tempFilePath) {
-        await unlink(tempFilePath).catch(() => {});
+        await unlink(tempFilePath).catch(() => {
+          return;
+        });
       }
     }
   },
