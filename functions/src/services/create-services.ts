@@ -13,7 +13,7 @@ import {OpenAIChatService} from "./chat/openai-chat-service";
 import {InterceptedChatService} from "./chat/intercepted-chat-service";
 import {RAGChatInterceptor} from "./chat/rag-chat-interceptor";
 import {ComposedChunkingStrategy} from "./chunking/composed-chunking-strategy";
-import {PdfTextExtractor} from "./chunking/text-extraction/pdf-text-extractor";
+import {DocumentAITextExtractor} from "./chunking/text-extraction/document-ai-text-extractor";
 import {StructureAwareTextChunker} from "./chunking/text-chunking/structure-aware-text-chunker";
 import {FirestoreContextStore} from "./context/firestore-context-store";
 import {GenkitEmbeddingService} from "./embedding/genkit-embedding-service";
@@ -23,6 +23,14 @@ import {DefaultIndexingService} from "./indexing/default-indexing-service";
 export interface ServiceOptions {
   studyId: string;
   openAiApiKey: string;
+}
+
+export interface IndexingServiceOptions extends ServiceOptions {
+  documentAI: {
+    projectId: string;
+    location: string;
+    processorId: string;
+  };
 }
 
 function createAI(openAiApiKey: string) {
@@ -38,12 +46,12 @@ export function createChatService(options: ServiceOptions): ChatService {
   );
 }
 
-export function createIndexingService(options: ServiceOptions): IndexingService {
+export function createIndexingService(options: IndexingServiceOptions): IndexingService {
   const ai = createAI(options.openAiApiKey);
   const contextStore = new FirestoreContextStore(options.studyId, ai);
   const embeddingService = new GenkitEmbeddingService(ai);
   const chunkingStrategy = new ComposedChunkingStrategy(
-    new PdfTextExtractor(),
+    new DocumentAITextExtractor(options.documentAI),
     new StructureAwareTextChunker(),
   );
   return new DefaultIndexingService(
