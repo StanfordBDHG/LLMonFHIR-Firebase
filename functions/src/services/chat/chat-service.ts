@@ -17,7 +17,7 @@ export type ChatBody =
   | ChatCompletionCreateParamsNonStreaming;
 
 /** Callback invoked for each chunk during a streaming response. */
-export type OnChunk = (data: string) => void;
+export type OnChunk = (data: string) => Promise<boolean>;
 
 export interface ChatService {
   /**

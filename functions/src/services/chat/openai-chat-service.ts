@@ -26,8 +26,11 @@ export class OpenAIChatService implements ChatService {
   async chatStreaming(body: ChatCompletionCreateParamsStreaming, onChunk: OnChunk): Promise<void> {
     const stream = await this.openai.chat.completions.create(body);
     for await (const chunk of stream) {
-      onChunk(`data: ${JSON.stringify(chunk)}\n\n`);
+      const shouldContinue = await onChunk(`data: ${JSON.stringify(chunk)}\n\n`);
+      if (!shouldContinue) {
+        break;
+      }
     }
-    onChunk("data: [DONE]\n\n");
+    await onChunk("data: [DONE]\n\n");
   }
 }

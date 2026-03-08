@@ -14,6 +14,12 @@ export class SlidingWindowTextChunker implements TextChunker {
     private readonly maxLength: number = 2200,
     private readonly overlap: number = 200,
   ) {
+    if (maxLength <= 0) {
+      throw new Error("maxLength must be greater than 0");
+    }
+    if (overlap < 0) {
+      throw new Error("overlap must be non-negative");
+    }
     if (maxLength <= overlap) {
       throw new Error("maxLength must be greater than overlap");
     }

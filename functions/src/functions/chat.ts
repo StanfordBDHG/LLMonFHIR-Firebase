@@ -26,7 +26,7 @@ export const chat = onCall(
         openAiApiKey: Secrets.OPENAI_API_KEY.value(),
       });
 
-      if (chatBody.stream) {
+      if (chatBody.stream && req.acceptsStreaming) {
         if (res === undefined) {
           throw new HttpsError(
             "internal",
@@ -35,7 +35,7 @@ export const chat = onCall(
         }
         return await chatService.chatStreaming(chatBody, (chunk) => res.sendChunk(chunk));
       } else {
-        return await chatService.chatNonStreaming(chatBody);
+        return await chatService.chatNonStreaming({...chatBody, stream: false});
       }
     } catch (error: unknown) {
       console.error("Error in chat endpoint:", error);
