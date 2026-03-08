@@ -22,7 +22,12 @@ export const onPDFUploaded = onObjectFinalized(
   {
     bucket: STORAGE_BUCKET,
     region: "us-central1",
-    secrets: [Secrets.OPENAI_API_KEY, Secrets.DOCUMENT_AI_PROCESSOR_ID, Secrets.DOCUMENT_AI_LOCATION],
+    secrets: [
+      Secrets.OPENAI_API_KEY,
+      Secrets.DOCUMENT_AI_PROCESSOR_ID,
+      Secrets.DOCUMENT_AI_LOCATION,
+      Secrets.DOCUMENT_AI_SERVICE_ACCOUNT_KEY,
+    ],
     serviceAccount: SERVICE_ACCOUNT,
     timeoutSeconds: 540,
     memory: "512MiB",
@@ -52,6 +57,7 @@ export const onPDFUploaded = onObjectFinalized(
       tempFilePath = join(tmpdir(), `${randomUUID()}.pdf`);
       await bucket.file(event.data.name).download({destination: tempFilePath});
 
+      const serviceAccountKey = Secrets.DOCUMENT_AI_SERVICE_ACCOUNT_KEY.value();
       const indexingService = createIndexingService({
         studyId,
         openAiApiKey: Secrets.OPENAI_API_KEY.value(),
@@ -59,6 +65,7 @@ export const onPDFUploaded = onObjectFinalized(
           projectId: process.env.GCLOUD_PROJECT ?? "",
           location: Secrets.DOCUMENT_AI_LOCATION.value(),
           processorId: Secrets.DOCUMENT_AI_PROCESSOR_ID.value(),
+          ...(serviceAccountKey && {serviceAccountKey}),
         },
       });
 

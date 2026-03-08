@@ -6,6 +6,8 @@ export interface DocumentAITextExtractorOptions {
   projectId: string;
   location: string;
   processorId: string;
+  /** Optional JSON service account key for authenticating to a different GCP project. */
+  serviceAccountKey?: string;
 }
 
 /**
@@ -13,14 +15,24 @@ export interface DocumentAITextExtractorOptions {
  *
  * Requires a Document AI processor (e.g. OCR or Layout Parser)
  * to be provisioned in the Google Cloud project.
+ *
+ * When {@link DocumentAITextExtractorOptions.serviceAccountKey} is provided,
+ * the client authenticates with those credentials — useful when the
+ * processor lives in a different GCP project than the one hosting
+ * Cloud Functions.
  */
 export class DocumentAITextExtractor implements TextExtractor {
   private readonly processorName: string;
   private readonly client: DocumentProcessorServiceClient;
 
   constructor(options: DocumentAITextExtractorOptions) {
+    const credentials = options.serviceAccountKey
+      ? JSON.parse(options.serviceAccountKey)
+      : undefined;
+
     this.client = new DocumentProcessorServiceClient({
       apiEndpoint: `${options.location}-documentai.googleapis.com`,
+      ...(credentials && {credentials}),
     });
     this.processorName = [
       "projects",

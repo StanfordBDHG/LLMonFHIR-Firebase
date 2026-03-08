@@ -30,6 +30,7 @@ export interface IndexingServiceOptions extends ServiceOptions {
     projectId: string;
     location: string;
     processorId: string;
+    serviceAccountKey?: string;
   };
 }
 
