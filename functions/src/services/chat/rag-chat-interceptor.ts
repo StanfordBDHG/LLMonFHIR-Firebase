@@ -21,10 +21,6 @@ export class RAGChatInterceptor implements ChatInterceptor {
       const query = extractLastUserMessage(body.messages);
       if (!query) return body;
 
-      console.log(
-        `[RAG] Retrieving context for: "${query.substring(0, 100)}..."`,
-      );
-
       const docs = await this.contextStore.retrieve(query, RAG_RETRIEVAL_LIMIT);
       const ragContext = formatDocuments(docs);
 

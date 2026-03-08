@@ -172,7 +172,6 @@ const ABBREVIATIONS = [
   "ml.",
   "kg.",
   "pt.",
-  "approx.",
 ];
 
 function escapeRegExp(s: string): string {

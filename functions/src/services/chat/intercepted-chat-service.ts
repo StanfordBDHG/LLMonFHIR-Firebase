@@ -1,3 +1,4 @@
+import {ChatCompletionCreateParamsNonStreaming, ChatCompletionCreateParamsStreaming} from "openai/resources";
 import {ChatInterceptor} from "./chat-interceptor";
 import {ChatBody, ChatService, OnChunk} from "./chat-service";
 
@@ -8,11 +9,21 @@ export class InterceptedChatService implements ChatService {
     private readonly interceptors: ChatInterceptor[],
   ) {}
 
-  async chat(body: ChatBody, onChunk?: OnChunk): Promise<string | undefined> {
+  async chatNonStreaming(body: ChatCompletionCreateParamsNonStreaming): Promise<string | undefined> {
+    const updatedBody = await this.applyInterceptors(body);
+    return this.inner.chatNonStreaming(updatedBody as ChatCompletionCreateParamsNonStreaming);
+  }
+
+  async chatStreaming(body: ChatCompletionCreateParamsStreaming, onChunk: OnChunk): Promise<void> {
+    const updatedBody = await this.applyInterceptors(body);
+    return this.inner.chatStreaming(updatedBody as ChatCompletionCreateParamsStreaming, onChunk);
+  }
+
+  private async applyInterceptors(body: ChatBody): Promise<ChatBody> {
     let current = body;
     for (const interceptor of this.interceptors) {
       current = await interceptor.intercept(current);
     }
-    return this.inner.chat(current, onChunk);
+    return current;
   }
 }

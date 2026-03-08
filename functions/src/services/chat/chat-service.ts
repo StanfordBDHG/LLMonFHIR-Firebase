@@ -3,6 +3,7 @@ import {
   ChatCompletionCreateParamsStreaming,
 } from "openai/resources";
 
+
 export type ChatBody =
   | ChatCompletionCreateParamsStreaming
   | ChatCompletionCreateParamsNonStreaming;
@@ -18,5 +19,7 @@ export interface ChatService {
    *   and returns `undefined`.
    * - Non-streaming: returns the response as a JSON string.
    */
-  chat(body: ChatBody, onChunk?: OnChunk): Promise<string | undefined>;
+  chatNonStreaming(body: ChatCompletionCreateParamsNonStreaming): Promise<string | undefined>;
+
+  chatStreaming(body: ChatCompletionCreateParamsStreaming, onChunk: OnChunk): Promise<void>;
 }

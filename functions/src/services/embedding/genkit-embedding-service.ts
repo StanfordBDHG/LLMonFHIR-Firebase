@@ -17,6 +17,12 @@ export class GenkitEmbeddingService implements EmbeddingService {
   }
 
   async embedBatch(texts: string[]): Promise<number[][]> {
-    return Promise.all(texts.map((t) => this.embed(t)));
+    const results: number[][] = [];
+    const concurrency = 5;
+    for (let i = 0; i < texts.length; i += concurrency) {
+      const slice = texts.slice(i, i + concurrency);
+      results.push(...await Promise.all(slice.map((t) => this.embed(t))));
+    }
+    return results;
   }
 }

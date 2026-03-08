@@ -9,17 +9,8 @@
 import {HttpsError, onCall} from "firebase-functions/https";
 import OpenAI from "openai";
 import {Secrets, SERVICE_ACCOUNT} from "../env";
-import {ChatBody, ChatService} from "../services/chat/chat-service";
 import {createChatService} from "../services/create-services";
-
-let chatService: ChatService | undefined;
-
-function getChatService(): ChatService {
-  return chatService ??= createChatService({
-    studyId: "spineai",
-    openAiApiKey: Secrets.OPENAI_API_KEY.value(),
-  });
-}
+import {ChatBody} from "../services/chat/chat-service";
 
 export const chat = onCall(
   {secrets: [Secrets.OPENAI_API_KEY], serviceAccount: SERVICE_ACCOUNT},
@@ -29,12 +20,23 @@ export const chat = onCall(
     }
 
     const chatBody = JSON.parse(req.data) as ChatBody;
-
     try {
-      return await getChatService().chat(
-        chatBody,
-        res ? (chunk) => res.sendChunk(chunk) : undefined,
-      );
+      const chatService = createChatService({
+        studyId: "spineai",
+        openAiApiKey: Secrets.OPENAI_API_KEY.value(),
+      });
+
+      if (chatBody.stream) {
+        if (res === undefined) {
+          throw new HttpsError(
+            "internal",
+            "Streaming responses are not supported in this environment",
+          );
+        }
+        return await chatService.chatStreaming(chatBody, (chunk) => res.sendChunk(chunk));
+      } else {
+        return await chatService.chatNonStreaming(chatBody);
+      }
     } catch (error: unknown) {
       console.error("Error in chat endpoint:", error);
       return formatErrorResponse(error, chatBody.stream ?? false);
