@@ -43,12 +43,10 @@ function injectRAGContext(
     content: `[Retrieved Context from Knowledge Base]:\n${ragContext}`,
   };
 
-  console.log(`[RAG: Context] ${JSON.stringify(ragSystemMessage)}`);
-
   const result = [...messages.slice(0, -1), ragSystemMessage, ...messages.slice(-1)];
   console.log("[RAG]: Conversation start");
   console.log(
-    result.map((message) => `[RAG: ${message.role}] "${message.content}"`).join("\n")
+    result.map((message) => `[RAG: ${message.role}] "${message.content?.slice(0, 100)}..."`).join("\n")
   );
   console.log("[RAG]: Conversation end");
   return result;
@@ -113,7 +111,7 @@ export const chat = onCall(
       try {
         if (ragEnabled) {
           const query =
-            [...augmentedMessages]
+            [...chatBody.messages]
               .reverse()
               .slice(0, 3)
               .map((message) => `[${message.role}]: "${normalizeMessageContent(message.content)}"`)
@@ -132,7 +130,7 @@ export const chat = onCall(
                 `[RAG] Retrieved context length: ${ragContext.length}`,
               );
               augmentedMessages = injectRAGContext(
-                augmentedMessages,
+                chatBody.messages,
                 ragContext,
               );
               console.log(
