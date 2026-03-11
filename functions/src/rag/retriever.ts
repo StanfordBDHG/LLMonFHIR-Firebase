@@ -9,13 +9,13 @@
 import {Document} from "genkit";
 import {ai, ragRetriever} from "../utils/genkit";
 
-export const RAG_RETRIEVAL_LIMIT = 5;
+export const RAG_RETRIEVAL_LIMIT = 10;
 
 const formatDoc = (doc: Document): string => {
   const metadata = doc.metadata;
 
-  const source = metadata?.sourceFile ?? "Unknown";
-  const chunk = metadata?.chunkIndex ?? "?";
+  const source = metadata?.file ?? "Unknown";
+  const chunk = metadata?.chunkId ?? "?";
   const docContent = doc.content
     .map((part) => part?.text ?? "")
     .filter(Boolean)
