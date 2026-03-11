@@ -36,7 +36,7 @@ export function ragRetriever(studyId: string): RetrieverAction {
     vectorField: "embedding",
     embedder,
     distanceMeasure: "COSINE",
-    metadataFields: ['file', 'chunkId'],
+    metadataFields: ["file", "chunkId"],
   });
 }
 

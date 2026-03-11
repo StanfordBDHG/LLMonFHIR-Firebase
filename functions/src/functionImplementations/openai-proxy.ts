@@ -45,13 +45,13 @@ function injectRAGContext(
 
   console.log(`[RAG: Context] ${JSON.stringify(ragSystemMessage)}`);
 
-   const result = [...messages.slice(0, -1), ragSystemMessage, ...messages.slice(-1)];
-    console.log("[RAG]: Conversation start");
-    console.log(
-      result.map(message => `[RAG: ${message.role}] "${message.content}"`).join("\n")
-    );
-    console.log("[RAG]: Conversation end");
-    return result;
+  const result = [...messages.slice(0, -1), ragSystemMessage, ...messages.slice(-1)];
+  console.log("[RAG]: Conversation start");
+  console.log(
+    result.map((message) => `[RAG: ${message.role}] "${message.content}"`).join("\n")
+  );
+  console.log("[RAG]: Conversation end");
+  return result;
 }
 
 // Joins together text parts only
