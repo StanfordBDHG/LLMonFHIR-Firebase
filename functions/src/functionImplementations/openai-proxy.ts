@@ -108,6 +108,10 @@ export const chat = onCall(
       // RAG: Retrieve context for the last user message
       let ragContext = "";
       try {
+        const chatHistory = chatBody.messages
+          .map((m) => `  > [${m.role}] "${m.content?.slice(0, 100)}..."`)
+          .join("\n");
+        console.log(`[RAG] Received ${chatBody.messages.length} messages:\n${chatHistory}`);
         if (ragEnabled) {
           const initialMessageLength = chatBody.messages.length;
           const query =
