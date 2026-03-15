@@ -109,9 +109,9 @@ export const chat = onCall(
       let ragContext = "";
       try {
         if (ragEnabled) {
-          let augmentedMessages = [...chatBody.messages];
+          const initialMessageLength = chatBody.messages.length;
           const query =
-            [...augmentedMessages]
+            [...chatBody.messages]
               .reverse()
               .slice(0, 3)
               .map((message) => `[${message.role}]: "${normalizeMessageContent(message.content)}"`)
@@ -129,20 +129,17 @@ export const chat = onCall(
               console.log(
                 `[RAG] Retrieved context length: ${ragContext.length}`,
               );
-              augmentedMessages = injectRAGContext(
-                augmentedMessages,
+              chatBody.messages = injectRAGContext(
+                chatBody.messages,
                 ragContext,
               );
               console.log(
-                `[RAG] Messages count changed from ${chatBody.messages.length} to ${augmentedMessages.length}`,
+                `[RAG] Messages count changed from ${initialMessageLength} to ${chatBody.messages.length}`,
               );
             } else {
               console.log("[RAG] No relevant context found");
             }
           }
-
-          // Update the body with augmented messages
-          chatBody.messages = augmentedMessages;
         }
       } catch (ragError) {
         console.error("[RAG] Error retrieving context:", ragError);
