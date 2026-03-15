@@ -106,10 +106,10 @@ export const chat = onCall(
       console.log(`[RAG] RAG enabled: ${ragEnabled}`);
 
       // RAG: Retrieve context for the last user message
-      let augmentedMessages = chatBody.messages;
       let ragContext = "";
       try {
         if (ragEnabled) {
+          let augmentedMessages = [...chatBody.messages];
           const query =
             [...augmentedMessages]
               .reverse()
@@ -140,14 +140,14 @@ export const chat = onCall(
               console.log("[RAG] No relevant context found");
             }
           }
+
+          // Update the body with augmented messages
+          chatBody.messages = augmentedMessages;
         }
       } catch (ragError) {
         console.error("[RAG] Error retrieving context:", ragError);
         // Continue without RAG context if there's an error
       }
-
-      // Update the body with augmented messages
-      chatBody.messages = augmentedMessages;
 
       if (chatBody?.stream) {
         // Set streaming headers
