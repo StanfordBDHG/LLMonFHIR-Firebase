@@ -83,7 +83,7 @@ const normalizeMessageContent = (
 
 export const chat = onCall(
   {secrets: [openAIAPIKey], serviceAccount: serviceAccount},
-  async (req, res) => {
+  async (req, res): Promise<string> => {
     if (!req.auth?.token) {
       throw new HttpsError("unauthenticated", "User must be authenticated");
     }
@@ -111,7 +111,7 @@ export const chat = onCall(
       try {
         if (ragEnabled) {
           const query =
-            [...chatBody.messages]
+            [...augmentedMessages]
               .reverse()
               .slice(0, 3)
               .map((message) => `[${message.role}]: "${normalizeMessageContent(message.content)}"`)
@@ -130,7 +130,7 @@ export const chat = onCall(
                 `[RAG] Retrieved context length: ${ragContext.length}`,
               );
               augmentedMessages = injectRAGContext(
-                chatBody.messages,
+                augmentedMessages,
                 ragContext,
               );
               console.log(
@@ -168,8 +168,7 @@ export const chat = onCall(
           res?.sendChunk(`data: ${JSON.stringify(chunk)}\n\n`);
         }
 
-        res?.sendChunk("data: [DONE]\n\n");
-        return;
+        return "data: [DONE]\n\n";
       }
 
       const response = await openai.chat.completions.create(chatBody);
