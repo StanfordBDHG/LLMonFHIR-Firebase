@@ -161,12 +161,12 @@ export const chat = onCall(
             contextLength: ragContext.length,
             enabled: ragEnabled,
           };
-          res?.sendChunk(`data: ${JSON.stringify(ragMetadata)}\n\n`);
+          await res?.sendChunk(`data: ${JSON.stringify(ragMetadata)}\n\n`);
         }
 
         const stream = await openai.chat.completions.create(chatBody);
         for await (const chunk of stream) {
-          res?.sendChunk(`data: ${JSON.stringify(chunk)}\n\n`);
+          await res?.sendChunk(`data: ${JSON.stringify(chunk)}\n\n`);
         }
 
         return "data: [DONE]\n\n";
