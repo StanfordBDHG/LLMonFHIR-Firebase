@@ -82,7 +82,7 @@ const normalizeMessageContent = (
 };
 
 export const chat = onCall(
-  {secrets: [openAIAPIKey], serviceAccount: serviceAccount},
+  {secrets: [openAIAPIKey], serviceAccount: serviceAccount, heartbeatSeconds: null},
   async (req, res): Promise<string | void> => {
     if (!req.auth?.token) {
       throw new HttpsError("unauthenticated", "User must be authenticated");
