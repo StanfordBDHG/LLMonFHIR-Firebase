@@ -30,24 +30,26 @@ function injectRAGContext(
     return messages;
   }
 
+  if (messages.at(messages.length - 1)?.role !== "user") {
+    // If the last message isn't from the user, we won't inject RAG context
+    console.warn(
+      "[RAG] Last message is not from user, skipping RAG context injection",
+    );
+    return messages;
+  }
+
   const ragSystemMessage: ChatCompletionMessageParam = {
     role: "system",
     content: `[Retrieved Context from Knowledge Base]:\n${ragContext}`,
   };
 
-  // Check if there's already a system message
-  const hasSystemMessage = messages.some((msg) => msg.role === "system");
-
-  if (hasSystemMessage) {
-    // Insert after the first system message
-    const result = [...messages];
-    const firstSystemIndex = result.findIndex((msg) => msg.role === "system");
-    result.splice(firstSystemIndex + 1, 0, ragSystemMessage);
-    return result;
-  }
-
-  // Insert at the beginning
-  return [ragSystemMessage, ...messages];
+  const result = [...messages.slice(0, -1), ragSystemMessage, ...messages.slice(-1)];
+  console.log("[RAG]: Conversation start");
+  console.log(
+    result.map((message) => `[RAG: ${message.role}] "${message.content?.slice(0, 100)}..."`).join("\n")
+  );
+  console.log("[RAG]: Conversation end");
+  return result;
 }
 
 // Joins together text parts only
@@ -113,19 +115,19 @@ export const chat = onCall(
       let ragContext = "";
       try {
         if (ragEnabled) {
-          const lastUserMessage =
+          const query =
             [...chatBody.messages]
               .reverse()
-              .filter((message) => message.role === "user")
-              .map((message) => normalizeMessageContent(message.content))
-              .find(Boolean) ?? "";
+              .slice(0, 3)
+              .map((message) => `[${message.role}]: "${normalizeMessageContent(message.content)}"`)
+              .join("\n\n");
 
-          if (lastUserMessage) {
+          if (query) {
             console.log(
-              `[RAG] Retrieving context for user message: "${lastUserMessage.substring(0, 100)}..."`,
+              `[RAG] Retrieving context for user message: "${query}..."`,
             );
             ragContext = await retrieveRAGContext({
-              query: lastUserMessage,
+              query,
               studyId,
             });
             if (ragContext && ragContext.trim()) {
