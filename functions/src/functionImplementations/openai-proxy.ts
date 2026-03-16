@@ -16,7 +16,6 @@ import type {
 import {retrieveRAGContext} from "../rag/retriever";
 import {serviceAccount} from "../utils/firebase";
 import {openAIAPIKey} from "../utils/genkit";
-import {z} from "genkit";
 
 type ChatBody =
   | ChatCompletionCreateParamsStreaming
@@ -106,7 +105,7 @@ export const chat = onCall(
       const ragEnabled = req.rawRequest.query.ragEnabled !== "false";
       console.log(`[RAG] RAG enabled: ${ragEnabled}`);
 
-      let studyId = "spineAI";
+      const studyId = "spineAI";
 
       // RAG: Retrieve context for the last user message
       let ragContext = "";
