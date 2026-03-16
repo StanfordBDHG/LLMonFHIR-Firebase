@@ -111,7 +111,7 @@ export const chat = onCall(
       let ragContext = "";
       try {
         const chatHistory = chatBody.messages
-          .map((m) => `  > [${m.role}] "${normalizeMessageContent(m.content)}..."`)
+          .map((m) => `  > "${JSON.stringify(m, undefined, 2)}"`)
           .join("\n");
         console.log(`[RAG] Received ${chatBody.messages.length} messages:\n${chatHistory}`);
         if (ragEnabled) {
