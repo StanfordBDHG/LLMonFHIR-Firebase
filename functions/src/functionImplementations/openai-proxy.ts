@@ -16,6 +16,7 @@ import type {
 import {retrieveRAGContext} from "../rag/retriever";
 import {serviceAccount} from "../utils/firebase";
 import {openAIAPIKey} from "../utils/genkit";
+import {z} from "genkit";
 
 type ChatBody =
   | ChatCompletionCreateParamsStreaming
@@ -105,6 +106,15 @@ export const chat = onCall(
       const ragEnabled = req.rawRequest.query.ragEnabled !== "false";
       console.log(`[RAG] RAG enabled: ${ragEnabled}`);
 
+      let studyId: string;
+      const defaultStudyId = "edu.stanford.LLMonFHIR.spineAI";
+      try {
+        studyId = z.string().optional().parse(req.rawRequest.query.studyId) ?? defaultStudyId;
+      } catch {
+        console.warn("[RAG]: Falling back to default studyId");
+        studyId = defaultStudyId;
+      }
+
       // RAG: Retrieve context for the last user message
       let ragContext = "";
       try {
@@ -127,7 +137,7 @@ export const chat = onCall(
             );
             ragContext = await retrieveRAGContext({
               query,
-              studyId: "spineai",
+              studyId,
             });
             if (ragContext && ragContext.trim()) {
               console.log(
