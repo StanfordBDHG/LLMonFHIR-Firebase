@@ -105,7 +105,7 @@ export const chat = onCall(
       const ragEnabled = req.rawRequest.query.ragEnabled !== "false";
       console.log(`[RAG] RAG enabled: ${ragEnabled}`);
 
-      const studyId = "spineAI";
+      const studyId = "spineai";
 
       // RAG: Retrieve context for the last user message
       let ragContext = "";
