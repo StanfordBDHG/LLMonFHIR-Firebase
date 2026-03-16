@@ -112,7 +112,7 @@ export const chat = onCall(
       try {
         console.log(`[RAG] Received ${chatBody.messages.length} messages`);
         for (const message of chatBody.messages) {
-          console.log(`[RAG, ${message.role}] "${JSON.stringify(message.content)}..."`);
+          console.log(`[RAG, ${message.role}] "${JSON.stringify(message)}..."`);
         }
         console.log(`[RAG] Received ${chatBody.messages.length} messages`);
         if (ragEnabled) {
