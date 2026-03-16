@@ -169,6 +169,7 @@ export const chat = onCall(
 
         const stream = await openai.chat.completions.create(chatBody);
         for await (const chunk of stream) {
+          console.log(`[STREAM] Emitting chunk: ${JSON.stringify(chunk)}...`);
           await res?.sendChunk(`data: ${JSON.stringify(chunk)}\n\n`);
         }
 
