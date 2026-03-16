@@ -83,7 +83,7 @@ const normalizeMessageContent = (
 
 export const chat = onCall(
   {secrets: [openAIAPIKey], serviceAccount: serviceAccount},
-  async (req, res): Promise<string> => {
+  async (req, res): Promise<string | void> => {
     if (!req.auth?.token) {
       throw new HttpsError("unauthenticated", "User must be authenticated");
     }
@@ -173,7 +173,7 @@ export const chat = onCall(
           await res?.sendChunk(`data: ${JSON.stringify(chunk)}\n\n`);
         }
 
-        return "data: [DONE]\n\n";
+        return;
       }
 
       const response = await openai.chat.completions.create(chatBody);
