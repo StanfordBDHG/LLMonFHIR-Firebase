@@ -1,0 +1,52 @@
+//
+// This source file is part of the Stanford Biodesign Digital Health LLMonFHIR- Firebase open-source project
+//
+// SPDX-FileCopyrightText: 2026 Stanford University and the project authors (see CONTRIBUTORS.md)
+//
+// SPDX-License-Identifier: MIT
+//
+
+import {genkit} from "genkit";
+import openAI from "@genkit-ai/compat-oai/openai";
+import {ChatService} from "./chat/chat-service";
+import {RAGChatInterceptor} from "./chat/rag-chat-interceptor";
+import {ComposedChunkingStrategy} from "./chunking/composed-chunking-strategy";
+import {PDFTextExtractor} from "./chunking/text-extraction/pdf-text-extractor";
+import {FirestoreContextStore} from "./context/firestore-context-store";
+import {GenkitEmbeddingService} from "./embedding/genkit-embedding-service";
+import {IndexingService} from "./indexing/indexing-service";
+import {DefaultIndexingService} from "./indexing/default-indexing-service";
+import {SlidingWindowTextChunker} from "./chunking/text-chunking/sliding-window-text-chunker";
+
+export interface ServiceOptions {
+  studyId: string;
+  openAIApiKey: string;
+}
+
+function createAI(openAIApiKey: string) {
+  return genkit({plugins: [openAI({apiKey: openAIApiKey})]});
+}
+
+export function createChatService(options: ServiceOptions): ChatService {
+  const ai = createAI(options.openAIApiKey);
+  const contextStore = new FirestoreContextStore(options.studyId, ai);
+  return new ChatService(
+    options.openAIApiKey,
+    [new RAGChatInterceptor(contextStore)],
+  );
+}
+
+export function createIndexingService(options: ServiceOptions): IndexingService {
+  const ai = createAI(options.openAIApiKey);
+  const contextStore = new FirestoreContextStore(options.studyId, ai);
+  const embeddingService = new GenkitEmbeddingService(ai);
+  const chunkingStrategy = new ComposedChunkingStrategy(
+    new PDFTextExtractor(),
+    new SlidingWindowTextChunker(),
+  );
+  return new DefaultIndexingService(
+    chunkingStrategy,
+    embeddingService,
+    contextStore,
+  );
+}
