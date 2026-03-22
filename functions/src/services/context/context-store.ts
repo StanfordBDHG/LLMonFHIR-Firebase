@@ -9,7 +9,8 @@
 /** A document retrieved from the context store. */
 export interface RetrievedDocument {
   text: string;
-  metadata?: Record<string, unknown>;
+  file: string;
+  chunkId: number;
 }
 
 export interface ChunkEmbedding {
