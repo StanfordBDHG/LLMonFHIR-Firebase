@@ -54,7 +54,7 @@ export const onPDFUploaded = onObjectFinalized(
 
       const indexingService = createIndexingService({
         studyId,
-        openAiApiKey: Secrets.OPENAI_API_KEY.value(),
+        openAIApiKey: Secrets.OPENAI_API_KEY.value(),
       });
 
       const result = await indexingService.index(

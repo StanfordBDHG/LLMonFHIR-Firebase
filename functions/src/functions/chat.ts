@@ -14,7 +14,7 @@ import {ChatBody} from "../services/chat/chat-service";
 
 export const chat = onCall(
   {secrets: [Secrets.OPENAI_API_KEY], serviceAccount: SERVICE_ACCOUNT},
-  async (req, res) => {
+  async (req, res): Promise<string | void> => {
     if (!req.auth?.token) {
       throw new HttpsError("unauthenticated", "User must be authenticated");
     }
@@ -23,7 +23,7 @@ export const chat = onCall(
     try {
       const chatService = createChatService({
         studyId: "spineai",
-        openAiApiKey: Secrets.OPENAI_API_KEY.value(),
+        openAIApiKey: Secrets.OPENAI_API_KEY.value(),
       });
 
       if (chatBody.stream && req.acceptsStreaming) {

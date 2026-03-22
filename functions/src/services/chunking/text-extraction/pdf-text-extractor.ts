@@ -11,7 +11,7 @@ import {readFile} from "node:fs/promises";
 import {TextExtractor} from "./text-extractor";
 
 /** Extracts text from PDF files using unpdf. */
-export class PdfTextExtractor implements TextExtractor {
+export class PDFTextExtractor implements TextExtractor {
   async extract(filePath: string): Promise<string[]> {
     const buffer = await readFile(filePath);
     const pdf = await getDocumentProxy(new Uint8Array(buffer));
