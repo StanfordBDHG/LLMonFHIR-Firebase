@@ -18,6 +18,8 @@ export const chat = onCall(
     if (!req.auth?.token) {
       throw new HttpsError("unauthenticated", "User must be authenticated");
     }
+
+    const ragEnabled = req.rawRequest.query.ragEnabled === "true";
     
     const studyId = req.rawRequest.query.studyId;
     if (typeof studyId !== "string" || !studyId) {
@@ -29,6 +31,7 @@ export const chat = onCall(
       const chatService = createChatService({
         studyId,
         openAIApiKey: Secrets.OPENAI_API_KEY.value(),
+        ragEnabled,
       });
 
       if (chatBody.stream && req.acceptsStreaming) {

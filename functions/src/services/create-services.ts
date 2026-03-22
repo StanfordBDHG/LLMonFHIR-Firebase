@@ -21,6 +21,7 @@ import {SlidingWindowTextChunker} from "./chunking/text-chunking/sliding-window-
 export interface ServiceOptions {
   studyId: string;
   openAIApiKey: string;
+  ragEnabled?: boolean;
 }
 
 function createAI(openAIApiKey: string) {
@@ -28,6 +29,9 @@ function createAI(openAIApiKey: string) {
 }
 
 export function createChatService(options: ServiceOptions): ChatService {
+  if (!options.ragEnabled) {
+    return new ChatService(options.openAIApiKey, []);
+  }
   const ai = createAI(options.openAIApiKey);
   const contextStore = new FirestoreContextStore(options.studyId, ai);
   return new ChatService(
