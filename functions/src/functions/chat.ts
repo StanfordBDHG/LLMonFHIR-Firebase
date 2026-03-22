@@ -20,7 +20,7 @@ export const chat = onCall(
     }
 
     const ragEnabled = req.rawRequest.query.ragEnabled === "true";
-    
+
     const studyId = req.rawRequest.query.studyId;
     if (typeof studyId !== "string" || !studyId) {
       throw new HttpsError("invalid-argument", "Missing or invalid studyId query parameter");
