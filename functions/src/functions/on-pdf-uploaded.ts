@@ -67,6 +67,7 @@ export const onPDFUploaded = onObjectFinalized(
       );
     } catch (error) {
       console.error(`[Storage] Error processing ${event.data.name}:`, error);
+      throw error;
     } finally {
       if (tempFilePath) {
         await unlink(tempFilePath).catch(() => {
