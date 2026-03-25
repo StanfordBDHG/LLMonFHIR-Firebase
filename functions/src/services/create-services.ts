@@ -12,6 +12,7 @@ import {ChatService} from "./chat/chat-service";
 import {RAGChatInterceptor} from "./chat/rag-chat-interceptor";
 import {ComposedChunkingStrategy} from "./chunking/composed-chunking-strategy";
 import {PDFTextExtractor} from "./chunking/text-extraction/pdf-text-extractor";
+import {ContextStore} from "./context/context-store";
 import {FirestoreContextStore} from "./context/firestore-context-store";
 import {GenkitEmbeddingService} from "./embedding/genkit-embedding-service";
 import {IndexingService} from "./indexing/indexing-service";
@@ -25,6 +26,10 @@ export interface ServiceOptions {
 
 function createAI(openAIApiKey: string) {
   return genkit({plugins: [openAI({apiKey: openAIApiKey})]});
+}
+
+export function createContextStore(studyId: string): ContextStore {
+  return new FirestoreContextStore(studyId, genkit({plugins: []}));
 }
 
 export function createChatService(options: ServiceOptions): ChatService {
