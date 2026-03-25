@@ -11,6 +11,7 @@ import {ChatCompletionMessageParam} from "openai/resources/chat/completions";
 import {ChatInterceptor} from "./chat-interceptor";
 import {ChatBody} from "./chat-service";
 import {ContextStore, RetrievedDocument} from "../context/context-store";
+import { z } from "genkit";
 
 const RAG_RETRIEVAL_LIMIT = 10;
 
@@ -119,8 +120,17 @@ export class AgenticContextChatInterceptor implements ChatInterceptor {
       return null;
     }
 
-    const args = JSON.parse(toolCall.function.arguments) as {query?: string};
-    return args.query ?? null;
+    try {
+      return z.string().parse(JSON.parse(toolCall.function.arguments).query);
+    } catch (error) {
+      console.error(
+        "[AgenticRAG] Error parsing tool call arguments:",
+        error,
+        "Raw arguments:",
+        toolCall.function.arguments,
+      );
+      return null;
+    }
   }
 
   private buildInternalMessages(
