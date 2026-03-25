@@ -11,7 +11,7 @@ import {ChatCompletionMessageParam} from "openai/resources/chat/completions";
 import {ChatInterceptor} from "./chat-interceptor";
 import {ChatBody} from "./chat-service";
 import {ContextStore, RetrievedDocument} from "../context/context-store";
-import { z } from "genkit";
+import {z} from "genkit";
 
 const RAG_RETRIEVAL_LIMIT = 10;
 
