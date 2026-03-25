@@ -16,14 +16,12 @@ import {Secrets, SERVICE_ACCOUNT, STORAGE_BUCKET} from "../env";
 import {createIndexingService} from "../services/create-services";
 
 const FILE_PATH_PATTERN =
-  /studies\/(?<studyId>[^/]+)\/rag_files\/(?<fileName>[^/]+\.(pdf|txt|md|rtf))$/i;
+  /studies\/(?<studyId>[^/]+)\/rag_files\/(?<fileName>[^/]+\.(pdf|txt|md))$/i;
 
 const SUPPORTED_CONTENT_TYPES = new Set([
   "application/pdf",
   "text/plain",
   "text/markdown",
-  "text/rtf",
-  "application/rtf",
 ]);
 
 export const onPDFUploaded = onObjectFinalized(

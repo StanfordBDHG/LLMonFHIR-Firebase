@@ -48,7 +48,6 @@ export function createIndexingService(options: ServiceOptions): IndexingService 
       ".pdf": new PDFTextExtractor(),
       ".txt": plainTextExtractor,
       ".md": plainTextExtractor,
-      ".rtf": plainTextExtractor,
     }),
     new SlidingWindowTextChunker(),
   );
