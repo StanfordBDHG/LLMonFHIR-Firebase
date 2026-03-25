@@ -31,7 +31,8 @@ export class FirestoreContextStore implements ContextStore {
       vectorField: "embedding",
       embedder,
       distanceMeasure: "COSINE",
-      metadataFields: ["file", "chunkId"],
+      distanceResultField: "distance",
+      metadataFields: ["file", "chunkId", "distance"],
     });
   }
 
@@ -42,14 +43,22 @@ export class FirestoreContextStore implements ContextStore {
       options: {limit},
     });
 
-    return docs.map((doc) => ({
-      text: doc.content
-        .map((p) => p?.text ?? "")
-        .filter(Boolean)
-        .join("\n"),
-      file: doc.metadata?.file ?? "Unknown",
-      chunkId: doc.metadata?.chunkId ?? -1,
-    }));
+    return docs.map((doc) => {
+      const distance = doc.metadata?.distance as number | undefined;
+      const similarity = distance !== undefined ? 1 - distance : undefined;
+      console.log(
+        `[ContextStore] chunk ${doc.metadata?.file}#${doc.metadata?.chunkId}` +
+          (similarity !== undefined ? ` similarity=${similarity.toFixed(3)}` : ""),
+      );
+      return {
+        text: doc.content
+          .map((p) => p?.text ?? "")
+          .filter(Boolean)
+          .join("\n"),
+        file: doc.metadata?.file ?? "Unknown",
+        chunkId: doc.metadata?.chunkId ?? -1,
+      };
+    });
   }
 
   async store(filename: string, chunks: ChunkEmbedding[]): Promise<void> {
