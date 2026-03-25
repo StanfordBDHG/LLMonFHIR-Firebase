@@ -12,7 +12,7 @@ import {join} from "node:path";
 import {tmpdir} from "node:os";
 import {randomUUID} from "node:crypto";
 import {getStorage} from "firebase-admin/storage";
-import {Secrets, SERVICE_ACCOUNT, STORAGE_BUCKET} from "../env";
+import {Secrets, SERVICE_ACCOUNT, STORAGE_BUCKET, STORAGE_REGION} from "../env";
 import {createIndexingService} from "../services/create-services";
 
 const FILE_PATH_PATTERN =
@@ -21,7 +21,7 @@ const FILE_PATH_PATTERN =
 export const onPDFUploaded = onObjectFinalized(
   {
     bucket: STORAGE_BUCKET,
-    region: "us-central1",
+    region: STORAGE_REGION,
     secrets: [Secrets.OPENAI_API_KEY],
     serviceAccount: SERVICE_ACCOUNT,
     timeoutSeconds: 540,

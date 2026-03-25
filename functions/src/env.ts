@@ -16,3 +16,5 @@ export const SERVICE_ACCOUNT = `cloud-function-sa@${process.env.GCLOUD_PROJECT}.
 
 export const STORAGE_BUCKET =
   process.env.STORAGE_BUCKET || `${process.env.GCLOUD_PROJECT}.firebasestorage.app`;
+
+export const STORAGE_REGION = process.env.STORAGE_REGION || "us-central1";

@@ -7,7 +7,7 @@
 //
 
 import {onObjectDeleted} from "firebase-functions/v2/storage";
-import {SERVICE_ACCOUNT, STORAGE_BUCKET} from "../env";
+import {SERVICE_ACCOUNT, STORAGE_BUCKET, STORAGE_REGION} from "../env";
 import {createContextStore} from "../services/create-services";
 
 const FILE_PATH_PATTERN =
@@ -16,7 +16,7 @@ const FILE_PATH_PATTERN =
 export const onDocumentDeleted = onObjectDeleted(
   {
     bucket: STORAGE_BUCKET,
-    region: "us-central1",
+    region: STORAGE_REGION,
     serviceAccount: SERVICE_ACCOUNT,
   },
   async (event) => {
