@@ -9,7 +9,7 @@
 import {genkit} from "genkit";
 import openAI from "@genkit-ai/compat-oai/openai";
 import {ChatService} from "./chat/chat-service";
-import {RAGChatInterceptor} from "./chat/rag-chat-interceptor";
+import {AgenticContextChatInterceptor} from "./chat/agentic-context-chat-interceptor";
 import {ComposedChunkingStrategy} from "./chunking/composed-chunking-strategy";
 import {PDFTextExtractor} from "./chunking/text-extraction/pdf-text-extractor";
 import {FirestoreContextStore} from "./context/firestore-context-store";
@@ -32,7 +32,7 @@ export function createChatService(options: ServiceOptions): ChatService {
   const contextStore = new FirestoreContextStore(options.studyId, ai);
   return new ChatService(
     options.openAIApiKey,
-    [new RAGChatInterceptor(contextStore)],
+    [new AgenticContextChatInterceptor(options.openAIApiKey, contextStore)],
   );
 }
 
