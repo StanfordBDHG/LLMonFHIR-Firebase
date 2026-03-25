@@ -128,16 +128,18 @@ export class AgenticContextChatInterceptor implements ChatInterceptor {
   ): ChatCompletionMessageParam[] {
     const firstSystemIndex = messages.findIndex((m) => m.role === "system");
     const originalSystemContent =
-      firstSystemIndex >= 0
-        ? this.extractTextContent(messages[firstSystemIndex].content)
-        : null;
+      firstSystemIndex >= 0 ?
+        this.extractTextContent(messages[firstSystemIndex].content) :
+        null;
 
     const adaptedSystemPrompt = [
-      "You are a context retrieval assistant. Based on the conversation, determine what information needs to be looked up in the knowledge base to answer the user's last message.",
-      "Call the `retrieve_context` function with a concise and specific search query that will retrieve the most relevant context.",
-      ...(originalSystemContent
-        ? ["", "Original system instructions:", originalSystemContent]
-        : []),
+      "You are a context retrieval assistant. Based on the conversation, determine what information ",
+      "needs to be looked up in the knowledge base to answer the user's last message.",
+      "Call the `retrieve_context` function with a concise and",
+      "specific search query that will retrieve the most relevant context.",
+      ...(originalSystemContent ?
+        ["", "Original system instructions:", originalSystemContent] :
+        []),
     ].join("\n");
 
     const adaptedSystemMessage: ChatCompletionMessageParam = {
