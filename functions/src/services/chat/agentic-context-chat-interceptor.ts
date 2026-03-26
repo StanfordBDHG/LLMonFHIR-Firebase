@@ -158,11 +158,7 @@ export class AgenticContextChatInterceptor implements ChatInterceptor {
     };
 
     // Replace the first system message (or prepend one), keep remaining non-tool messages
-    const nonSystemMessages = messages.filter(
-      (m, i) => !(m.role === "system" && i === firstSystemIndex),
-    );
-
-    return [adaptedSystemMessage, ...nonSystemMessages];
+    return [messages.slice(firstSystemIndex-1), adaptedSystemMessage, messages.slice(firstSystemIndex+1), ];
   }
 
   private extractTextContent(
