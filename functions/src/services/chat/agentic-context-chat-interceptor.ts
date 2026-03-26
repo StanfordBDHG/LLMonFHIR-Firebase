@@ -158,7 +158,7 @@ export class AgenticContextChatInterceptor implements ChatInterceptor {
     };
 
     // Replace the first system message (or prepend one), keep remaining non-tool messages
-    return [messages.slice(firstSystemIndex-1), adaptedSystemMessage, messages.slice(firstSystemIndex+1), ];
+    return [...messages.slice(firstSystemIndex-1), adaptedSystemMessage, ...messages.slice(firstSystemIndex+1)];
   }
 
   private extractTextContent(
