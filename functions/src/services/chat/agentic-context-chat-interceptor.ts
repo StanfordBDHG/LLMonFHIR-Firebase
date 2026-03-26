@@ -148,7 +148,7 @@ export class AgenticContextChatInterceptor implements ChatInterceptor {
       "Call the `retrieve_context` function with a concise and",
       "specific search query that will retrieve the most relevant context.",
       ...(originalSystemContent ?
-        ["", "Original system instructions:", originalSystemContent] :
+        ["", `Original system instructions: """{originalSystemContent}"""`, ] :
         []),
     ].join("\n");
 
