@@ -21,4 +21,5 @@ export interface ChunkEmbedding {
 export interface ContextStore {
   retrieve(query: string, limit: number): Promise<RetrievedDocument[]>;
   store(filename: string, chunks: ChunkEmbedding[]): Promise<void>;
+  delete(filename: string): Promise<void>;
 }

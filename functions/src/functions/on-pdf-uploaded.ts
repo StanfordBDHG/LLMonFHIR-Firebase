@@ -8,27 +8,30 @@
 
 import {onObjectFinalized} from "firebase-functions/v2/storage";
 import {unlink} from "node:fs/promises";
-import {join} from "node:path";
+import {extname, join} from "node:path";
 import {tmpdir} from "node:os";
 import {randomUUID} from "node:crypto";
 import {getStorage} from "firebase-admin/storage";
-import {Secrets, SERVICE_ACCOUNT, STORAGE_BUCKET} from "../env";
+import {Secrets, SERVICE_ACCOUNT, STORAGE_BUCKET, STORAGE_FILE_PATH_PATTERN, STORAGE_REGION} from "../env";
 import {createIndexingService} from "../services/create-services";
 
-const FILE_PATH_PATTERN =
-  /studies\/(?<studyId>[^/]+)\/rag_files\/(?<fileName>[^/]+\.pdf)/;
+const SUPPORTED_CONTENT_TYPES = new Set([
+  "application/pdf",
+  "text/plain",
+  "text/markdown",
+]);
 
 export const onPDFUploaded = onObjectFinalized(
   {
     bucket: STORAGE_BUCKET,
-    region: "us-central1",
+    region: STORAGE_REGION,
     secrets: [Secrets.OPENAI_API_KEY],
     serviceAccount: SERVICE_ACCOUNT,
     timeoutSeconds: 540,
     memory: "512MiB",
   },
   async (event) => {
-    const match = event.data.name.match(FILE_PATH_PATTERN);
+    const match = event.data.name.match(STORAGE_FILE_PATH_PATTERN);
     const studyId = match?.groups?.studyId;
     const fileName = match?.groups?.fileName;
 
@@ -37,19 +40,20 @@ export const onPDFUploaded = onObjectFinalized(
       return;
     }
 
-    if (event.data.contentType !== "application/pdf") {
+    if (!SUPPORTED_CONTENT_TYPES.has(event.data.contentType ?? "")) {
       console.log(
-        `[Storage] Skipping non-PDF: ${event.data.name} (${event.data.contentType})`,
+        `[Storage] Skipping unsupported content type: ${event.data.name} (${event.data.contentType})`,
       );
       return;
     }
 
-    console.log(`[Storage] Processing PDF ${fileName} for study ${studyId}`);
+    console.log(`[Storage] Processing ${fileName} for study ${studyId}`);
 
     let tempFilePath: string | undefined;
     try {
       const bucket = getStorage().bucket(event.data.bucket);
-      tempFilePath = join(tmpdir(), `${randomUUID()}.pdf`);
+      const ext = extname(event.data.name);
+      tempFilePath = join(tmpdir(), `${randomUUID()}${ext}`);
       await bucket.file(event.data.name).download({destination: tempFilePath});
 
       const indexingService = createIndexingService({

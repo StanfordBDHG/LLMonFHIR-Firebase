@@ -11,7 +11,10 @@ import openAI from "@genkit-ai/compat-oai/openai";
 import {ChatService} from "./chat/chat-service";
 import {RAGChatInterceptor} from "./chat/rag-chat-interceptor";
 import {ComposedChunkingStrategy} from "./chunking/composed-chunking-strategy";
+import {DispatchingTextExtractor} from "./chunking/text-extraction/dispatching-text-extractor";
 import {PDFTextExtractor} from "./chunking/text-extraction/pdf-text-extractor";
+import {PlainTextExtractor} from "./chunking/text-extraction/plain-text-extractor";
+import {ContextStore} from "./context/context-store";
 import {FirestoreContextStore} from "./context/firestore-context-store";
 import {GenkitEmbeddingService} from "./embedding/genkit-embedding-service";
 import {IndexingService} from "./indexing/indexing-service";
@@ -26,6 +29,10 @@ export interface ServiceOptions {
 
 function createAI(openAIApiKey: string) {
   return genkit({plugins: [openAI({apiKey: openAIApiKey})]});
+}
+
+export function createContextStore(studyId: string): ContextStore {
+  return new FirestoreContextStore(studyId, genkit({plugins: []}));
 }
 
 export function createChatService(options: ServiceOptions): ChatService {
@@ -44,8 +51,13 @@ export function createIndexingService(options: ServiceOptions): IndexingService 
   const ai = createAI(options.openAIApiKey);
   const contextStore = new FirestoreContextStore(options.studyId, ai);
   const embeddingService = new GenkitEmbeddingService(ai);
+  const plainTextExtractor = new PlainTextExtractor();
   const chunkingStrategy = new ComposedChunkingStrategy(
-    new PDFTextExtractor(),
+    new DispatchingTextExtractor({
+      ".pdf": new PDFTextExtractor(),
+      ".txt": plainTextExtractor,
+      ".md": plainTextExtractor,
+    }),
     new SlidingWindowTextChunker(),
   );
   return new DefaultIndexingService(
