@@ -18,3 +18,6 @@ export const STORAGE_BUCKET =
   process.env.STORAGE_BUCKET || `${process.env.GCLOUD_PROJECT}.firebasestorage.app`;
 
 export const STORAGE_REGION = process.env.STORAGE_REGION || "us-central1";
+
+export const STORAGE_FILE_PATH_PATTERN =
+  /studies\/(?<studyId>[^/]+)\/rag_files\/(?<fileName>[^/]+)$/;

@@ -7,11 +7,8 @@
 //
 
 import {onObjectDeleted} from "firebase-functions/v2/storage";
-import {SERVICE_ACCOUNT, STORAGE_BUCKET, STORAGE_REGION} from "../env";
+import {SERVICE_ACCOUNT, STORAGE_BUCKET, STORAGE_FILE_PATH_PATTERN, STORAGE_REGION} from "../env";
 import {createContextStore} from "../services/create-services";
-
-const FILE_PATH_PATTERN =
-  /studies\/(?<studyId>[^/]+)\/rag_files\/(?<fileName>[^/]+\.pdf)/;
 
 export const onDocumentDeleted = onObjectDeleted(
   {
@@ -20,7 +17,7 @@ export const onDocumentDeleted = onObjectDeleted(
     serviceAccount: SERVICE_ACCOUNT,
   },
   async (event) => {
-    const match = event.data.name.match(FILE_PATH_PATTERN);
+    const match = event.data.name.match(STORAGE_FILE_PATH_PATTERN);
     const studyId = match?.groups?.studyId;
 
     if (!match || !studyId) {
