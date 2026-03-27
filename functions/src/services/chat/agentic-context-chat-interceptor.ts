@@ -167,7 +167,7 @@ export class AgenticContextChatInterceptor implements ChatInterceptor {
       "Call the `retrieve_context` function with a concise and",
       "specific search query that will retrieve the most relevant context.",
       ...(originalSystemContent ?
-        ["", "Original system instructions: \"\"\"{originalSystemContent}\"\"\""] :
+        ["", `Original system instructions: """${originalSystemContent}"""`] :
         []),
     ].join("\n");
 
@@ -177,7 +177,7 @@ export class AgenticContextChatInterceptor implements ChatInterceptor {
     };
 
     // Replace the first system message (or prepend one), keep remaining non-tool messages
-    return [...messages.slice(firstSystemIndex-1), adaptedSystemMessage, ...messages.slice(firstSystemIndex+1)];
+    return [...messages.slice(0, firstSystemIndex), adaptedSystemMessage, ...messages.slice(firstSystemIndex + 1)];
   }
 
   private extractTextContent(
