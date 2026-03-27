@@ -12,7 +12,7 @@ import {ChatInterceptor} from "./chat-interceptor";
 import {ChatBody} from "./chat-service";
 import {ContextStore, RetrievedDocument} from "../context/context-store";
 import {z} from "genkit";
-import { VERBOSE_LOGGING } from "../../env";
+import {VERBOSE_LOGGING} from "../../env";
 
 const RAG_RETRIEVAL_LIMIT = 10;
 
@@ -69,7 +69,7 @@ export class AgenticContextChatInterceptor implements ChatInterceptor {
 
       if (VERBOSE_LOGGING) {
         for (const msg of body.messages) {
-         console.log(`[AgenticRAG] message: ${JSON.stringify(msg, null, 2)}`);
+          console.log(`[AgenticRAG] message: ${JSON.stringify(msg, null, 2)}`);
         }
       }
 
@@ -80,13 +80,13 @@ export class AgenticContextChatInterceptor implements ChatInterceptor {
       }
 
       if (VERBOSE_LOGGING) {
-        console.log(`[AgenticRAG] Using queries: [${queries.map(query => `"${query}"`).join(", ")}]`);
+        console.log(`[AgenticRAG] Using queries: [${queries.map((query) => `"${query}"`).join(", ")}]`);
       }
 
       const docs = await Promise.all(
         queries.map((q) => this.contextStore.retrieve(q, RAG_RETRIEVAL_LIMIT)),
       );
-      const ragDocs = 
+      const ragDocs =
         docs.flat().sort((a, b) => (a.distance ?? 1) - (b.distance ?? 1)).slice(0, RAG_RETRIEVAL_LIMIT);
       const ragContext = this.formatDocuments(ragDocs);
 
@@ -127,7 +127,7 @@ export class AgenticContextChatInterceptor implements ChatInterceptor {
       stream: false,
     });
 
-    const toolCalls = response.choices.flatMap(choice => choice.message?.tool_calls ?? []).filter(
+    const toolCalls = response.choices.flatMap((choice) => choice.message?.tool_calls ?? []).filter(
       (tc) => tc.type === "function" && tc.function.name === "retrieve_context",
     ) as OpenAI.ChatCompletionMessageFunctionToolCall[];
 
@@ -137,14 +137,15 @@ export class AgenticContextChatInterceptor implements ChatInterceptor {
     }
 
     try {
-      const parsedArguments = z.object({ query: z.string() }).array().parse(toolCalls.map(tc => JSON.parse(tc.function.arguments)));
-      return parsedArguments.map(args => args.query);
+      const parsedArguments = z.object({query: z.string()}).array()
+        .parse(toolCalls.map((tc) => JSON.parse(tc.function.arguments)));
+      return parsedArguments.map((args) => args.query);
     } catch (error) {
       console.error(
         "[AgenticRAG] Error parsing tool call arguments:",
         error,
         "Raw arguments:",
-        toolCalls.map(tc => tc.function.arguments),
+        toolCalls.map((tc) => tc.function.arguments),
       );
       return [];
     }
@@ -166,7 +167,7 @@ export class AgenticContextChatInterceptor implements ChatInterceptor {
       "Call the `retrieve_context` function with a concise and",
       "specific search query that will retrieve the most relevant context.",
       ...(originalSystemContent ?
-        ["", `Original system instructions: """{originalSystemContent}"""`, ] :
+        ["", "Original system instructions: \"\"\"{originalSystemContent}\"\"\""] :
         []),
     ].join("\n");
 
