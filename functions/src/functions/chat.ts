@@ -19,11 +19,19 @@ export const chat = onCall(
       throw new HttpsError("unauthenticated", "User must be authenticated");
     }
 
+    const ragEnabled = req.rawRequest.query.ragEnabled === "true";
+
+    const studyId = req.rawRequest.query.studyId;
+    if (typeof studyId !== "string" || !studyId) {
+      throw new HttpsError("invalid-argument", "Missing or invalid studyId query parameter");
+    }
+
     const chatBody = JSON.parse(req.data) as ChatBody;
     try {
       const chatService = createChatService({
-        studyId: "spineai",
+        studyId,
         openAIApiKey: Secrets.OPENAI_API_KEY.value(),
+        ragEnabled,
       });
 
       if (chatBody.stream && req.acceptsStreaming) {
