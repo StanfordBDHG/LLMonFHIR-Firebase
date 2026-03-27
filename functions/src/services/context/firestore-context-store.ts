@@ -62,15 +62,10 @@ export class FirestoreContextStore implements ContextStore {
   }
 
   async store(filename: string, chunks: ChunkEmbedding[]): Promise<void> {
-    const existingDocs = await this.firestore
-      .collection(this.collectionName)
-      .where("file", "==", filename)
-      .get();
-
+    const deleted = await this.deleteChunksByFilename(filename);
     console.log(
-      `[ContextStore] Replacing ${existingDocs.size} existing chunks for ${filename}`,
+      `[ContextStore] Replacing ${deleted} existing chunks for ${filename}`,
     );
-    await Promise.all(existingDocs.docs.map((doc) => doc.ref.delete()));
 
     console.log(
       `[ContextStore] Storing ${chunks.length} new chunks for ${filename}`,
@@ -85,5 +80,20 @@ export class FirestoreContextStore implements ContextStore {
         }),
       ),
     );
+  }
+
+  async delete(filename: string): Promise<void> {
+    const deleted = await this.deleteChunksByFilename(filename);
+    console.log(`[ContextStore] Deleted ${deleted} chunks for ${filename}`);
+  }
+
+  private async deleteChunksByFilename(filename: string): Promise<number> {
+    const snapshot = await this.firestore
+      .collection(this.collectionName)
+      .where("file", "==", filename)
+      .get();
+
+    await Promise.all(snapshot.docs.map((doc) => doc.ref.delete()));
+    return snapshot.size;
   }
 }
