@@ -10,6 +10,7 @@
 export interface RetrievedDocument {
   text: string;
   file: string;
+  distance: number | null;
   chunkId: number;
 }
 

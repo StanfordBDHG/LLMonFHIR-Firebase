@@ -21,3 +21,5 @@ export const STORAGE_REGION = process.env.STORAGE_REGION || "us-central1";
 
 export const STORAGE_FILE_PATH_PATTERN =
   /studies\/(?<studyId>[^/]+)\/rag_files\/(?<fileName>[^/]+)$/;
+
+export const VERBOSE_LOGGING = process.env.VERBOSE_LOGGING === "true";
