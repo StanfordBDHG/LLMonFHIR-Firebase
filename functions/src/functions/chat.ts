@@ -13,7 +13,7 @@ import {createChatService} from "../services/create-services";
 import {ChatBody} from "../services/chat/chat-service";
 
 export const chat = onCall(
-  {secrets: [Secrets.OPENAI_API_KEY], serviceAccount: SERVICE_ACCOUNT},
+  {secrets: [Secrets.OPENAI_API_KEY], serviceAccount: SERVICE_ACCOUNT, timeoutSeconds: 540, memory: "512MiB"},
   async (req, res): Promise<string | void> => {
     if (!req.auth?.token) {
       throw new HttpsError("unauthenticated", "User must be authenticated");

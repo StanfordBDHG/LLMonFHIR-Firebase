@@ -32,6 +32,7 @@ export class FirestoreContextStore implements ContextStore {
       embedder,
       distanceMeasure: "COSINE",
       distanceResultField: "distance",
+      distanceThreshold: 0.5,
       metadataFields: ["file", "chunkId", "distance"],
     });
   }
@@ -55,6 +56,7 @@ export class FirestoreContextStore implements ContextStore {
           .map((p) => p?.text ?? "")
           .filter(Boolean)
           .join("\n"),
+        distance: distance ?? null,
         file: doc.metadata?.file ?? "Unknown",
         chunkId: doc.metadata?.chunkId ?? -1,
       };

@@ -12,6 +12,7 @@ import {ChatInterceptor} from "./chat-interceptor";
 import {ChatBody} from "./chat-service";
 import {ContextStore, RetrievedDocument} from "../context/context-store";
 import {z} from "genkit";
+import { VERBOSE_LOGGING } from "../../env";
 
 const RAG_RETRIEVAL_LIMIT = 10;
 
@@ -66,27 +67,42 @@ export class AgenticContextChatInterceptor implements ChatInterceptor {
         return body;
       }
 
-      const query = await this.determineQuery(body);
-      if (!query) return body;
+      if (VERBOSE_LOGGING) {
+        for (const msg of body.messages) {
+         console.log(`[AgenticRAG] message: ${JSON.stringify(msg, null, 2)}`);
+        }
+      }
 
-      console.log(`[AgenticRAG] Using query: "${query}"`);
+      const queries = await this.determineQueries(body);
+      if (queries.length === 0) {
+        console.warn("[AgenticRAG] No queries generated, skipping context injection");
+        return body;
+      }
 
-      const docs = await this.contextStore.retrieve(query, RAG_RETRIEVAL_LIMIT);
-      const ragContext = this.formatDocuments(docs);
+      if (VERBOSE_LOGGING) {
+        console.log(`[AgenticRAG] Using queries: [${queries.map(query => `"${query}"`).join(", ")}]`);
+      }
+
+      const docs = await Promise.all(
+        queries.map((q) => this.contextStore.retrieve(q, RAG_RETRIEVAL_LIMIT)),
+      );
+      const ragDocs = 
+        docs.flat().sort((a, b) => (a.distance ?? 1) - (b.distance ?? 1)).slice(0, RAG_RETRIEVAL_LIMIT);
+      const ragContext = this.formatDocuments(ragDocs);
 
       if (!ragContext) {
         console.log("[AgenticRAG] No relevant context found");
         return body;
       }
 
-      console.log(
-        `[AgenticRAG] Retrieved context (${ragContext.length} chars, ${docs.length} docs)`,
-      );
-
       const ragMessage: ChatCompletionMessageParam = {
         role: "system",
         content: `[Retrieved Context from Knowledge Base]:\n${ragContext}`,
       };
+
+      if (VERBOSE_LOGGING) {
+        console.log(`[AgenticRAG] Injecting RAG context message before last user message:\n\n${ragMessage.content}`);
+      }
 
       const newMessages = [
         ...body.messages.slice(0, -1),
@@ -100,7 +116,7 @@ export class AgenticContextChatInterceptor implements ChatInterceptor {
     }
   }
 
-  private async determineQuery(body: ChatBody): Promise<string | null> {
+  private async determineQueries(body: ChatBody): Promise<string[]> {
     const messages = this.buildInternalMessages(body.messages);
 
     const response = await this.openai.chat.completions.create({
@@ -111,25 +127,26 @@ export class AgenticContextChatInterceptor implements ChatInterceptor {
       stream: false,
     });
 
-    const toolCall = response.choices[0]?.message?.tool_calls?.find(
+    const toolCalls = response.choices.flatMap(choice => choice.message?.tool_calls ?? []).filter(
       (tc) => tc.type === "function" && tc.function.name === "retrieve_context",
-    );
+    ) as OpenAI.ChatCompletionMessageFunctionToolCall[];
 
-    if (!toolCall || toolCall.type !== "function") {
+    if (toolCalls.length === 0) {
       console.warn("[AgenticRAG] No retrieve_context tool call in response");
-      return null;
+      return [];
     }
 
     try {
-      return z.string().parse(JSON.parse(toolCall.function.arguments).query);
+      const parsedArguments = z.object({ query: z.string() }).array().parse(toolCalls.map(tc => JSON.parse(tc.function.arguments)));
+      return parsedArguments.map(args => args.query);
     } catch (error) {
       console.error(
         "[AgenticRAG] Error parsing tool call arguments:",
         error,
         "Raw arguments:",
-        toolCall.function.arguments,
+        toolCalls.map(tc => tc.function.arguments),
       );
-      return null;
+      return [];
     }
   }
 
@@ -145,6 +162,7 @@ export class AgenticContextChatInterceptor implements ChatInterceptor {
     const adaptedSystemPrompt = [
       "You are a context retrieval assistant. Based on the conversation, determine what information ",
       "needs to be looked up in the knowledge base to answer the user's last message.",
+      "The knowledge base contains documents like medical studies and clinical guidelines.",
       "Call the `retrieve_context` function with a concise and",
       "specific search query that will retrieve the most relevant context.",
       ...(originalSystemContent ?
