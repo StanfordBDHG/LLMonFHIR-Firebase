@@ -61,16 +61,17 @@ export class FirestoreContextStore implements ContextStore {
     console.log(
       `[ContextStore] Storing ${chunks.length} new chunks for ${filename}`,
     );
-    await Promise.all(
-      chunks.map((chunk, index) =>
-        this.firestore.collection(this.collectionName).add({
-          text: chunk.text,
-          embedding: FieldValue.vector(chunk.embedding ?? []),
-          file: filename,
-          chunkId: index,
-        }),
-      ),
+    const bulkWriter = this.firestore.bulkWriter();
+    const collection = this.firestore.collection(this.collectionName);
+    chunks.forEach((chunk, index) =>
+      bulkWriter.create(collection.doc(), {
+        text: chunk.text,
+        embedding: FieldValue.vector(chunk.embedding ?? []),
+        file: filename,
+        chunkId: index,
+      }),
     );
+    await bulkWriter.close();
   }
 
   async delete(filename: string): Promise<void> {
@@ -84,7 +85,9 @@ export class FirestoreContextStore implements ContextStore {
       .where("file", "==", filename)
       .get();
 
-    await Promise.all(snapshot.docs.map((doc) => doc.ref.delete()));
+    const bulkWriter = this.firestore.bulkWriter();
+    snapshot.docs.forEach((doc) => bulkWriter.delete(doc.ref));
+    await bulkWriter.close();
     return snapshot.size;
   }
 }
