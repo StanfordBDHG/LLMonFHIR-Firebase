@@ -1,3 +1,11 @@
+//
+// This source file is part of the Stanford Biodesign Digital Health LLMonFHIR- Firebase open-source project
+//
+// SPDX-FileCopyrightText: 2026 Stanford University and the project authors (see CONTRIBUTORS.md)
+//
+// SPDX-License-Identifier: MIT
+//
+
 import {DocumentProcessorServiceClient} from "@google-cloud/documentai";
 import {readFile} from "node:fs/promises";
 import {TextExtractor} from "./text-extractor";
@@ -26,9 +34,9 @@ export class DocumentAITextExtractor implements TextExtractor {
   private readonly client: DocumentProcessorServiceClient;
 
   constructor(options: DocumentAITextExtractorOptions) {
-    const credentials = options.serviceAccountKey
-      ? JSON.parse(options.serviceAccountKey)
-      : undefined;
+    const credentials = options.serviceAccountKey ?
+      JSON.parse(options.serviceAccountKey) :
+      undefined;
 
     this.client = new DocumentProcessorServiceClient({
       apiEndpoint: `${options.location}-documentai.googleapis.com`,

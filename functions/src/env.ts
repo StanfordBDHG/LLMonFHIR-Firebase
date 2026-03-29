@@ -10,10 +10,12 @@ import {defineSecret} from "firebase-functions/params";
 
 export const Secrets = {
   OPENAI_API_KEY: defineSecret("OPENAI_API_KEY"),
-  DOCUMENT_AI_PROCESSOR_ID: defineSecret("DOCUMENT_AI_PROCESSOR_ID"),
-  DOCUMENT_AI_LOCATION: defineSecret("DOCUMENT_AI_LOCATION"),
   DOCUMENT_AI_SERVICE_ACCOUNT_KEY: defineSecret("DOCUMENT_AI_SERVICE_ACCOUNT_KEY"),
 };
+
+export const DOCUMENT_AI_PROCESSOR_ID = process.env.DOCUMENT_AI_PROCESSOR_ID;
+export const DOCUMENT_AI_PROJECT_ID = process.env.DOCUMENT_AI_PROJECT_ID;
+export const DOCUMENT_AI_LOCATION = process.env.DOCUMENT_AI_LOCATION;
 
 export const SERVICE_ACCOUNT = `cloud-function-sa@${process.env.GCLOUD_PROJECT}.iam.gserviceaccount.com`;
 
