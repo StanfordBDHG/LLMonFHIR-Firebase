@@ -28,7 +28,7 @@ const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai
 const GEMINI_MODEL_OVERRIDES: ModelOverrides = {
   "gpt-4o": "gemini-2.5-flash-preview-05-20",
   "gpt-4o-mini": "gemini-2.0-flash",
-  default: "gemini-2.0-flash",
+  "default": "gemini-2.0-flash",
 };
 
 export interface ServiceOptions {
