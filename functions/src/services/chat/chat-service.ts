@@ -21,25 +21,27 @@ export type ChatBody =
 /** Callback invoked for each chunk during a streaming response. */
 export type OnChunk = (data: string) => Promise<boolean>;
 
-export class ChatService {
-  private readonly openai: OpenAI;
+export interface ModelOverrides {
+  default: string;
+  [model: string]: string | undefined;
+}
 
+export class ChatService {
   constructor(
-    apiKey: string,
+    private readonly client: OpenAI,
     private readonly interceptors: ChatInterceptor[],
-  ) {
-    this.openai = new OpenAI({apiKey});
-  }
+    private readonly modelOverrides?: ModelOverrides,
+  ) {}
 
   async chatNonStreaming(body: ChatCompletionCreateParamsNonStreaming): Promise<string> {
     const updatedBody = await this.applyInterceptors(body);
-    const response = await this.openai.chat.completions.create(updatedBody as ChatCompletionCreateParamsNonStreaming);
+    const response = await this.client.chat.completions.create(updatedBody as ChatCompletionCreateParamsNonStreaming);
     return JSON.stringify(response);
   }
 
   async chatStreaming(body: ChatCompletionCreateParamsStreaming, onChunk: OnChunk): Promise<void> {
     const updatedBody = await this.applyInterceptors(body);
-    const stream = await this.openai.chat.completions.create(updatedBody as ChatCompletionCreateParamsStreaming);
+    const stream = await this.client.chat.completions.create(updatedBody as ChatCompletionCreateParamsStreaming);
     for await (const chunk of stream) {
       const shouldContinue = await onChunk(`data: ${JSON.stringify(chunk)}\n\n`);
       if (!shouldContinue) {
@@ -51,6 +53,10 @@ export class ChatService {
 
   private async applyInterceptors(body: ChatBody): Promise<ChatBody> {
     let current = body;
+    if (this.modelOverrides) {
+      const mapped = this.modelOverrides[current.model] ?? this.modelOverrides.default;
+      current = {...current, model: mapped};
+    }
     for (const interceptor of this.interceptors) {
       current = await interceptor.intercept(current);
     }
