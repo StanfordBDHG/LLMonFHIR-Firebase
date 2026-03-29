@@ -1,9 +1,17 @@
+//
+// This source file is part of the Stanford Biodesign Digital Health LLMonFHIR- Firebase open-source project
+//
+// SPDX-FileCopyrightText: 2026 Stanford University and the project authors (see CONTRIBUTORS.md)
+//
+// SPDX-License-Identifier: MIT
+//
+
 import {ChatCompletionMessageParam} from "openai/resources/chat/completions";
 import {ChatInterceptor} from "./chat-interceptor";
 import {ChatBody} from "./chat-service";
 import {ContextStore, RetrievedDocument} from "../context/context-store";
 
-const RAG_RETRIEVAL_LIMIT = 5;
+const RAG_RETRIEVAL_LIMIT = 10;
 
 /**
  * Intercepts chat requests to inject relevant RAG context from a
@@ -18,15 +26,11 @@ export class RAGChatInterceptor implements ChatInterceptor {
 
   async intercept(body: ChatBody): Promise<ChatBody> {
     try {
-      const query = extractLastUserMessage(body.messages);
+      const query = this.extractQuery(body);
       if (!query) return body;
 
-      console.log(
-        `[RAG] Retrieving context for: "${query.substring(0, 100)}..."`,
-      );
-
       const docs = await this.contextStore.retrieve(query, RAG_RETRIEVAL_LIMIT);
-      const ragContext = formatDocuments(docs);
+      const ragContext = this.formatDocuments(docs);
 
       if (!ragContext) {
         console.log("[RAG] No relevant context found");
@@ -37,69 +41,57 @@ export class RAGChatInterceptor implements ChatInterceptor {
         `[RAG] Retrieved context (${ragContext.length} chars, ${docs.length} docs)`,
       );
 
-      return {...body, messages: injectContext(body.messages, ragContext)};
+      const ragMessage: ChatCompletionMessageParam = {
+        role: "system",
+        content: `[Retrieved Context from Knowledge Base]:\n${ragContext}`,
+      };
+
+      const newMessages = [
+        ...body.messages.slice(0, -1),
+        ragMessage,
+        ...body.messages.slice(-1),
+      ];
+      return {...body, messages: newMessages};
     } catch (error) {
       console.error("[RAG] Error retrieving context:", error);
       return body;
     }
   }
-}
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-function extractLastUserMessage(
-  messages: ChatCompletionMessageParam[],
-): string | undefined {
-  for (let i = messages.length - 1; i >= 0; i--) {
-    if (messages[i].role === "user") {
-      return normalizeContent(messages[i].content);
+  private extractQuery(body: ChatBody): string | null {
+    const lastMessage = body.messages.at(body.messages.length - 1);
+    if (lastMessage?.role !== "user") {
+      // If the last message isn't from the user, we won't inject RAG context
+      console.warn(
+        "[RAG] Last message is not from user, skipping RAG context injection",
+      );
+      return null;
     }
+
+    return this.normalizeContent(lastMessage.content);
   }
-  return undefined;
-}
 
-function normalizeContent(
-  content?: ChatCompletionMessageParam["content"],
-): string {
-  if (typeof content === "string") return content;
-  if (!content) return "";
-  return content
-    .map((part) => {
-      if (typeof part === "string") return part;
-      if (typeof part === "object" && part !== null && "text" in part) {
-        return typeof part.text === "string" ? part.text : "";
-      }
-      return "";
-    })
-    .filter(Boolean)
-    .join(" ");
-}
-
-function formatDocuments(docs: RetrievedDocument[]): string {
-  if (docs.length === 0) return "";
-  return docs
-    .map((doc) => {
-      const source = doc.metadata?.sourceFile ?? "Unknown";
-      const chunk = doc.metadata?.chunkIndex ?? "?";
-      return `[Document: ${source} | Chunk ${chunk}]\n${doc.text}`;
-    })
-    .join("\n\n---\n\n");
-}
-
-function injectContext(
-  messages: ChatCompletionMessageParam[],
-  ragContext: string,
-): ChatCompletionMessageParam[] {
-  const contextMessage: ChatCompletionMessageParam = {
-    role: "system",
-    content: `[Retrieved Context from Knowledge Base]:\n${ragContext}`,
-  };
-  const result = [...messages];
-  const firstSystemIdx = result.findIndex((m) => m.role === "system");
-  if (firstSystemIdx >= 0) {
-    result.splice(firstSystemIdx + 1, 0, contextMessage);
-  } else {
-    result.unshift(contextMessage);
+  private normalizeContent(
+    content?: ChatCompletionMessageParam["content"],
+  ): string {
+    if (typeof content === "string") return content;
+    if (!content) return "";
+    return content
+      .map((part) => {
+        if (typeof part === "string") return part;
+        if (typeof part === "object" && part !== null && "text" in part) {
+          return typeof part.text === "string" ? part.text : "";
+        }
+        return "";
+      })
+      .filter(Boolean)
+      .join(" ");
   }
-  return result;
+
+  private formatDocuments(docs: RetrievedDocument[]): string {
+    if (docs.length === 0) return "";
+    return docs
+      .map((doc) => `[Document: ${doc.file} | Chunk ${doc.chunkId}]\n${doc.text}`)
+      .join("\n\n---\n\n");
+  }
 }

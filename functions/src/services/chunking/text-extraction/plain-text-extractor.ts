@@ -6,17 +6,14 @@
 // SPDX-License-Identifier: MIT
 //
 
-import {extractText, getDocumentProxy} from "unpdf";
 import {readFile} from "node:fs/promises";
 import {TextExtractor} from "./text-extractor";
 
-/** Extracts text from PDF files using unpdf. */
-export class PDFTextExtractor implements TextExtractor {
+/** Extracts text from plain-text files (e.g. .txt, .md, .rtf). */
+export class PlainTextExtractor implements TextExtractor {
   async extract(filePath: string): Promise<string[]> {
-    const buffer = await readFile(filePath);
-    const pdf = await getDocumentProxy(new Uint8Array(buffer));
-    const {text} = await extractText(pdf, {mergePages: true});
-    return [this.clean(text)];
+    const content = await readFile(filePath, "utf-8");
+    return [this.clean(content)];
   }
 
   private clean(raw: string): string {
@@ -25,7 +22,6 @@ export class PDFTextExtractor implements TextExtractor {
       // eslint-disable-next-line no-control-regex
       .replace(/[\x00-\x09\x0B\x0C\x0E-\x1F\x7F]/g, "")
       .replace(/[ \t]+/g, " ")
-      .replace(/([a-zA-Z])-\s*\n\s*([a-zA-Z])/g, "$1$2")
       .replace(/\n{3,}/g, "\n\n")
       .trim();
   }

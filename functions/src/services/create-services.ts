@@ -9,51 +9,52 @@
 import {genkit} from "genkit";
 import openAI from "@genkit-ai/compat-oai/openai";
 import {ChatService} from "./chat/chat-service";
-import {OpenAIChatService} from "./chat/openai-chat-service";
-import {InterceptedChatService} from "./chat/intercepted-chat-service";
 import {RAGChatInterceptor} from "./chat/rag-chat-interceptor";
 import {ComposedChunkingStrategy} from "./chunking/composed-chunking-strategy";
-import {DocumentAITextExtractor} from "./chunking/text-extraction/document-ai-text-extractor";
-import {StructureAwareTextChunker} from "./chunking/text-chunking/structure-aware-text-chunker";
+import {DispatchingTextExtractor} from "./chunking/text-extraction/dispatching-text-extractor";
+import {PDFTextExtractor} from "./chunking/text-extraction/pdf-text-extractor";
+import {PlainTextExtractor} from "./chunking/text-extraction/plain-text-extractor";
+import {ContextStore} from "./context/context-store";
 import {FirestoreContextStore} from "./context/firestore-context-store";
 import {GenkitEmbeddingService} from "./embedding/genkit-embedding-service";
 import {IndexingService} from "./indexing/indexing-service";
 import {DefaultIndexingService} from "./indexing/default-indexing-service";
+import {SlidingWindowTextChunker} from "./chunking/text-chunking/sliding-window-text-chunker";
 
 export interface ServiceOptions {
   studyId: string;
-  openAiApiKey: string;
+  openAIApiKey: string;
 }
 
-export interface IndexingServiceOptions extends ServiceOptions {
-  documentAI: {
-    projectId: string;
-    location: string;
-    processorId: string;
-    serviceAccountKey?: string;
-  };
+function createAI(openAIApiKey: string) {
+  return genkit({plugins: [openAI({apiKey: openAIApiKey})]});
 }
 
-function createAI(openAiApiKey: string) {
-  return genkit({plugins: [openAI({apiKey: openAiApiKey})]});
+export function createContextStore(studyId: string): ContextStore {
+  return new FirestoreContextStore(studyId, genkit({plugins: []}));
 }
 
 export function createChatService(options: ServiceOptions): ChatService {
-  const ai = createAI(options.openAiApiKey);
+  const ai = createAI(options.openAIApiKey);
   const contextStore = new FirestoreContextStore(options.studyId, ai);
-  return new InterceptedChatService(
-    new OpenAIChatService(options.openAiApiKey),
+  return new ChatService(
+    options.openAIApiKey,
     [new RAGChatInterceptor(contextStore)],
   );
 }
 
-export function createIndexingService(options: IndexingServiceOptions): IndexingService {
-  const ai = createAI(options.openAiApiKey);
+export function createIndexingService(options: ServiceOptions): IndexingService {
+  const ai = createAI(options.openAIApiKey);
   const contextStore = new FirestoreContextStore(options.studyId, ai);
   const embeddingService = new GenkitEmbeddingService(ai);
+  const plainTextExtractor = new PlainTextExtractor();
   const chunkingStrategy = new ComposedChunkingStrategy(
-    new DocumentAITextExtractor(options.documentAI),
-    new StructureAwareTextChunker(),
+    new DispatchingTextExtractor({
+      ".pdf": new PDFTextExtractor(),
+      ".txt": plainTextExtractor,
+      ".md": plainTextExtractor,
+    }),
+    new SlidingWindowTextChunker(),
   );
   return new DefaultIndexingService(
     chunkingStrategy,

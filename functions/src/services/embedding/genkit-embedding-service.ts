@@ -1,3 +1,11 @@
+//
+// This source file is part of the Stanford Biodesign Digital Health LLMonFHIR- Firebase open-source project
+//
+// SPDX-FileCopyrightText: 2026 Stanford University and the project authors (see CONTRIBUTORS.md)
+//
+// SPDX-License-Identifier: MIT
+//
+
 import {Genkit} from "genkit";
 import openAI from "@genkit-ai/compat-oai/openai";
 import {EmbeddingService} from "./embedding-service";
@@ -17,6 +25,12 @@ export class GenkitEmbeddingService implements EmbeddingService {
   }
 
   async embedBatch(texts: string[]): Promise<number[][]> {
-    return Promise.all(texts.map((t) => this.embed(t)));
+    const results: number[][] = [];
+    const concurrency = 5;
+    for (let i = 0; i < texts.length; i += concurrency) {
+      const slice = texts.slice(i, i + concurrency);
+      results.push(...await Promise.all(slice.map((t) => this.embed(t))));
+    }
+    return results;
   }
 }
