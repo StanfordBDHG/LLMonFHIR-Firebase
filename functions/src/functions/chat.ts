@@ -9,9 +9,9 @@
 import {HttpsError, onCall} from "firebase-functions/https";
 import OpenAI from "openai";
 import {Secrets, SERVICE_ACCOUNT} from "../env";
-import {createChatService, LLMService} from "../services/create-services";
+import {createChatService} from "../services/create-services";
 import {ChatBody} from "../services/chat/chat-service";
-import { z } from "genkit";
+import {z} from "genkit";
 
 export const chat = onCall(
   {
