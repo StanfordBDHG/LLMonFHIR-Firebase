@@ -10,7 +10,7 @@ import {genkit} from "genkit";
 import openAI from "@genkit-ai/compat-oai/openai";
 import OpenAI from "openai";
 import {ChatService, ModelOverrides} from "./chat/chat-service";
-import {RAGChatInterceptor} from "./chat/rag-chat-interceptor";
+import {AgenticContextChatInterceptor} from "./chat/agentic-context-chat-interceptor";
 import {ComposedChunkingStrategy} from "./chunking/composed-chunking-strategy";
 import {DispatchingTextExtractor} from "./chunking/text-extraction/dispatching-text-extractor";
 import {PDFTextExtractor} from "./chunking/text-extraction/pdf-text-extractor";
@@ -36,6 +36,7 @@ export interface ServiceOptions {
   openAIApiKey: string;
   geminiApiKey?: string;
   service?: LLMService;
+  ragEnabled?: boolean;
 }
 
 function createAI(openAIApiKey: string) {
@@ -60,12 +61,15 @@ export function createContextStore(studyId: string): ContextStore {
 }
 
 export function createChatService(options: ServiceOptions): ChatService {
+  if (!options.ragEnabled) {
+    return new ChatService(options.openAIApiKey, []);
+  }
   const ai = createAI(options.openAIApiKey);
   const contextStore = new FirestoreContextStore(options.studyId, ai);
   const {client, modelOverrides} = createLLMClient(options);
   return new ChatService(
     client,
-    [new RAGChatInterceptor(contextStore)],
+    [new AgenticContextChatInterceptor(options.openAIApiKey, contextStore)],
     modelOverrides,
   );
 }
