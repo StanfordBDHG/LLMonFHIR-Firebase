@@ -52,11 +52,7 @@ const createOpenAIClient = (ragEnabled: boolean) => {
     const urlString = typeof url === "string" ? url : url.toString();
     if (urlString.includes("/v1/chat/completions")) {
       await signInAnonymously(auth);
-      const studyId =
-        process.env.STUDY_ID || "edu.stanford.LLMonFHIR.spineAI";
-      const name =
-        `chat?studyId=${studyId}&ragEnabled=${ragEnabled}`
-      const callable = httpsCallable(functions, name);
+      const callable = httpsCallable(functions, ragEnabled ? "chat" : "chat?ragEnabled=false");
       const {stream, data} = await callable.stream(init?.body);
       const responseStream = new ReadableStream({
         start: async (controller) => {
