@@ -13,17 +13,25 @@ import {createChatService} from "../services/create-services";
 import {ChatBody} from "../services/chat/chat-service";
 
 export const chat = onCall(
-  {secrets: [Secrets.OPENAI_API_KEY], serviceAccount: SERVICE_ACCOUNT},
+  {secrets: [Secrets.OPENAI_API_KEY], serviceAccount: SERVICE_ACCOUNT, timeoutSeconds: 540, memory: "512MiB"},
   async (req, res): Promise<string | void> => {
     if (!req.auth?.token) {
       throw new HttpsError("unauthenticated", "User must be authenticated");
     }
 
+    const ragEnabled = req.rawRequest.query.ragEnabled === "true";
+
+    const studyId = req.rawRequest.query.studyId;
+    if (typeof studyId !== "string" || !studyId) {
+      throw new HttpsError("invalid-argument", "Missing or invalid studyId query parameter");
+    }
+
     const chatBody = JSON.parse(req.data) as ChatBody;
     try {
       const chatService = createChatService({
-        studyId: "spineai",
+        studyId,
         openAIApiKey: Secrets.OPENAI_API_KEY.value(),
+        ragEnabled,
       });
 
       if (chatBody.stream && req.acceptsStreaming) {
