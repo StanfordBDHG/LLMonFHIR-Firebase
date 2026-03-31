@@ -61,15 +61,15 @@ export function createContextStore(studyId: string): ContextStore {
 }
 
 export function createChatService(options: ServiceOptions): ChatService {
+  const {client, modelOverrides} = createLLMClient(options);
   if (!options.ragEnabled) {
-    return new ChatService(options.openAIApiKey, []);
+    return new ChatService(client, []);
   }
   const ai = createAI(options.openAIApiKey);
   const contextStore = new FirestoreContextStore(options.studyId, ai);
-  const {client, modelOverrides} = createLLMClient(options);
   return new ChatService(
     client,
-    [new AgenticContextChatInterceptor(options.openAIApiKey, contextStore)],
+    [new AgenticContextChatInterceptor(client, contextStore)],
     modelOverrides,
   );
 }
