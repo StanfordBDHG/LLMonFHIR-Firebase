@@ -11,7 +11,7 @@ import OpenAI from "openai";
 import {Secrets, SERVICE_ACCOUNT} from "../env";
 import {createChatService} from "../services/create-services";
 import {ChatBody} from "../services/chat/chat-service";
-import { logger } from "firebase-functions";
+import {logger} from "firebase-functions";
 
 export const chat = onCall(
   {secrets: [Secrets.OPENAI_API_KEY], serviceAccount: SERVICE_ACCOUNT, timeoutSeconds: 540, memory: "512MiB"},
@@ -23,7 +23,7 @@ export const chat = onCall(
     const ragEnabled = req.rawRequest.query.ragEnabled;
     const studyId = req.rawRequest.query.studyId;
 
-    logger.info(`[CHAT]: RAG: ${ragEnabled}, studyId: "${studyId}"`)
+    logger.info(`[CHAT]: RAG: ${ragEnabled}, studyId: "${studyId}"`);
 
     const chatBody = JSON.parse(req.data) as ChatBody;
     try {
