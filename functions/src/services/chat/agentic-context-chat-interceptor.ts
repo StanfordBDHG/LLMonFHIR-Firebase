@@ -14,6 +14,16 @@ import {ContextStore, RetrievedDocument} from "../context/context-store";
 import {z} from "genkit";
 import {VERBOSE_LOGGING} from "../../env";
 
+const RAG_QUERY_PROMPT = `
+You are a context retrieval assistant. Based on the conversation, determine what information 
+needs to be looked up in the knowledge base to answer the user's last message.
+
+The knowledge base contains documents like medical studies and clinical guidelines.
+
+Call the \`retrieve_context\` function with a concise and 
+specific search query that will retrieve the most relevant context.
+`;
+
 const RAG_RETRIEVAL_LIMIT = 10;
 
 const RETRIEVE_CONTEXT_TOOL: OpenAI.ChatCompletionTool = {
@@ -161,11 +171,7 @@ export class AgenticContextChatInterceptor implements ChatInterceptor {
         null;
 
     const adaptedSystemPrompt = [
-      "You are a context retrieval assistant. Based on the conversation, determine what information ",
-      "needs to be looked up in the knowledge base to answer the user's last message.",
-      "The knowledge base contains documents like medical studies and clinical guidelines.",
-      "Call the `retrieve_context` function with a concise and",
-      "specific search query that will retrieve the most relevant context.",
+      RAG_QUERY_PROMPT,
       ...(originalSystemContent ?
         ["", `Original system instructions: """${originalSystemContent}"""`] :
         []),
