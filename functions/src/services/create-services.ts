@@ -26,9 +26,11 @@ export type LLMService = "openAI" | "gemini";
 
 const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/";
 const GEMINI_MODEL_OVERRIDES: ModelOverrides = {
-  "gpt-4o": "gemini-2.5-flash-preview-05-20",
-  "gpt-4o-mini": "gemini-2.0-flash",
-  "default": "gemini-2.0-flash",
+  "gpt-4o": "gemini-2.5-flash",
+  "gpt-4o-mini": "gemini-2.5-flash-lite",
+  "gpt-5.4": "gemini-3.1-pro-preview",
+  "gpt-5.4-nano": "gemini-3.1-flash-lite-preview",
+  "default": "gemini-3-flash-preview",
 };
 
 export interface ServiceOptions {
