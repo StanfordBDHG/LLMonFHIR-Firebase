@@ -11,6 +11,7 @@ import OpenAI from "openai";
 import {Secrets, SERVICE_ACCOUNT} from "../env";
 import {createChatService, LLMService} from "../services/create-services";
 import {ChatBody} from "../services/chat/chat-service";
+import { z } from "genkit";
 
 export const chat = onCall(
   {
@@ -24,7 +25,7 @@ export const chat = onCall(
       throw new HttpsError("unauthenticated", "User must be authenticated");
     }
 
-    const service = (req.rawRequest?.query?.service as LLMService) || "openAI";
+    const service = z.enum(["gemini", "openAI"]).safeParse(req.rawRequest.query.service).data ?? "openAI";
     const ragEnabled = req.rawRequest.query.ragEnabled === "true";
 
     const studyId = req.rawRequest.query.studyId;
