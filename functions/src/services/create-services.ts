@@ -9,7 +9,7 @@
 import {genkit} from "genkit";
 import openAI from "@genkit-ai/compat-oai/openai";
 import {ChatService} from "./chat/chat-service";
-import {RAGChatInterceptor} from "./chat/rag-chat-interceptor";
+import {AgenticContextChatInterceptor} from "./chat/agentic-context-chat-interceptor";
 import {ComposedChunkingStrategy} from "./chunking/composed-chunking-strategy";
 import {DispatchingTextExtractor} from "./chunking/text-extraction/dispatching-text-extractor";
 import {PDFTextExtractor} from "./chunking/text-extraction/pdf-text-extractor";
@@ -24,6 +24,7 @@ import {SlidingWindowTextChunker} from "./chunking/text-chunking/sliding-window-
 export interface ServiceOptions {
   studyId: string;
   openAIApiKey: string;
+  ragEnabled?: boolean;
 }
 
 function createAI(openAIApiKey: string) {
@@ -35,11 +36,14 @@ export function createContextStore(studyId: string): ContextStore {
 }
 
 export function createChatService(options: ServiceOptions): ChatService {
+  if (!options.ragEnabled) {
+    return new ChatService(options.openAIApiKey, []);
+  }
   const ai = createAI(options.openAIApiKey);
   const contextStore = new FirestoreContextStore(options.studyId, ai);
   return new ChatService(
     options.openAIApiKey,
-    [new RAGChatInterceptor(contextStore)],
+    [new AgenticContextChatInterceptor(options.openAIApiKey, contextStore)],
   );
 }
 
