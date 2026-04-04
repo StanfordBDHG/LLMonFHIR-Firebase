@@ -16,7 +16,7 @@ import type {
 } from "openai/resources/chat/completions";
 import { initializeApp } from "firebase/app";
 import { connectFunctionsEmulator, getFunctions, httpsCallable } from "firebase/functions";
-import { connectAuthEmulator, getAuth, initializeAuth, signInAnonymously } from "firebase/auth";
+import { connectAuthEmulator, initializeAuth, signInAnonymously } from "firebase/auth";
 
 export interface RagContextInfo {
   context: string;
