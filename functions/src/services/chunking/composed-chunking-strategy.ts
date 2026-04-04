@@ -6,10 +6,10 @@
 // SPDX-License-Identifier: MIT
 //
 
-import {Chunk} from "./chunk.js";
-import {FileChunkingStrategy} from "./chunking-strategy.js";
-import {TextChunker} from "./text-chunking/text-chunker.js";
-import {TextExtractor} from "./text-extraction/text-extractor.js";
+import { type Chunk } from "./chunk.js";
+import { type FileChunkingStrategy } from "./chunking-strategy.js";
+import { type TextChunker } from "./text-chunking/text-chunker.js";
+import { type TextExtractor } from "./text-extraction/text-extractor.js";
 
 /**
  * Composes a {@link TextExtractor} with a {@link TextChunker} to form a
@@ -27,7 +27,7 @@ export class ComposedChunkingStrategy implements FileChunkingStrategy {
   async chunkFile(filePath: string): Promise<Chunk[]> {
     const segments = await this.extractor.extract(filePath);
     return segments.flatMap((segment) =>
-      this.chunker.chunk(segment).map((text) => ({text})),
+      this.chunker.chunk(segment).map((text) => ({ text })),
     );
   }
 }

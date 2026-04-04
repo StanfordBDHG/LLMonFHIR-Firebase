@@ -29,13 +29,13 @@
     "unpdf": "^1.4.0"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "eslint": "^10.2.0",
+    "@stanfordspezi/spezi-web-configurations": "^0.7.0",
+    "eslint": "^9.39.1",
     "firebase-functions-test": "^3.4.1",
     "genkit-cli": "^1.31.0",
+    "prettier": "^3.8.1",
     "tsx": "^4.21.0",
-    "typescript": "^6.0.2",
-    "typescript-eslint": "^8.58.0"
+    "typescript": "^6.0.2"
   },
   "type": "module",
   "private": true

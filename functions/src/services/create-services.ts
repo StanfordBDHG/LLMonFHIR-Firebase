@@ -6,20 +6,20 @@
 // SPDX-License-Identifier: MIT
 //
 
-import {genkit} from "genkit";
 import openAI from "@genkit-ai/compat-oai/openai";
-import {ChatService} from "./chat/chat-service.js";
-import {AgenticContextChatInterceptor} from "./chat/agentic-context-chat-interceptor.js";
-import {ComposedChunkingStrategy} from "./chunking/composed-chunking-strategy.js";
-import {DispatchingTextExtractor} from "./chunking/text-extraction/dispatching-text-extractor.js";
-import {PDFTextExtractor} from "./chunking/text-extraction/pdf-text-extractor.js";
-import {PlainTextExtractor} from "./chunking/text-extraction/plain-text-extractor.js";
-import {ContextStore} from "./context/context-store.js";
-import {FirestoreContextStore} from "./context/firestore-context-store.js";
-import {GenkitEmbeddingService} from "./embedding/genkit-embedding-service.js";
-import {IndexingService} from "./indexing/indexing-service.js";
-import {DefaultIndexingService} from "./indexing/default-indexing-service.js";
-import {SlidingWindowTextChunker} from "./chunking/text-chunking/sliding-window-text-chunker.js";
+import { genkit } from "genkit";
+import { AgenticContextChatInterceptor } from "./chat/agentic-context-chat-interceptor.js";
+import { ChatService } from "./chat/chat-service.js";
+import { ComposedChunkingStrategy } from "./chunking/composed-chunking-strategy.js";
+import { SlidingWindowTextChunker } from "./chunking/text-chunking/sliding-window-text-chunker.js";
+import { DispatchingTextExtractor } from "./chunking/text-extraction/dispatching-text-extractor.js";
+import { PDFTextExtractor } from "./chunking/text-extraction/pdf-text-extractor.js";
+import { PlainTextExtractor } from "./chunking/text-extraction/plain-text-extractor.js";
+import { type ContextStore } from "./context/context-store.js";
+import { FirestoreContextStore } from "./context/firestore-context-store.js";
+import { GenkitEmbeddingService } from "./embedding/genkit-embedding-service.js";
+import { DefaultIndexingService } from "./indexing/default-indexing-service.js";
+import { type IndexingService } from "./indexing/indexing-service.js";
 
 export interface ServiceOptions {
   studyId: string;
@@ -27,27 +27,26 @@ export interface ServiceOptions {
   ragEnabled?: boolean;
 }
 
-function createAI(openAIApiKey: string) {
-  return genkit({plugins: [openAI({apiKey: openAIApiKey})]});
-}
+const createAI = (openAIApiKey: string) =>
+  genkit({ plugins: [openAI({ apiKey: openAIApiKey })] });
 
-export function createContextStore(studyId: string): ContextStore {
-  return new FirestoreContextStore(studyId, genkit({plugins: []}));
-}
+export const createContextStore = (studyId: string): ContextStore =>
+  new FirestoreContextStore(studyId, genkit({ plugins: [] }));
 
-export function createChatService(options: ServiceOptions): ChatService {
+export const createChatService = (options: ServiceOptions): ChatService => {
   if (!options.ragEnabled) {
     return new ChatService(options.openAIApiKey, []);
   }
   const ai = createAI(options.openAIApiKey);
   const contextStore = new FirestoreContextStore(options.studyId, ai);
-  return new ChatService(
-    options.openAIApiKey,
-    [new AgenticContextChatInterceptor(options.openAIApiKey, contextStore)],
-  );
-}
+  return new ChatService(options.openAIApiKey, [
+    new AgenticContextChatInterceptor(options.openAIApiKey, contextStore),
+  ]);
+};
 
-export function createIndexingService(options: ServiceOptions): IndexingService {
+export const createIndexingService = (
+  options: ServiceOptions,
+): IndexingService => {
   const ai = createAI(options.openAIApiKey);
   const contextStore = new FirestoreContextStore(options.studyId, ai);
   const embeddingService = new GenkitEmbeddingService(ai);
@@ -65,4 +64,4 @@ export function createIndexingService(options: ServiceOptions): IndexingService 
     embeddingService,
     contextStore,
   );
-}
+};

@@ -6,11 +6,11 @@
 // SPDX-License-Identifier: MIT
 //
 
-import React, { useState } from "react";
+import { type SyntheticEvent, useState } from "react";
 import { ChatPanel } from "./components/ChatPanel";
 import { useChat } from "./hooks/useChat";
 
-export function App() {
+export const App = () => {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -18,8 +18,8 @@ export function App() {
   const ragChat = useChat({ ragEnabled: true });
   const noRagChat = useChat({ ragEnabled: false });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: SyntheticEvent) => {
+    event.preventDefault();
     if (!query.trim() || loading) return;
 
     setLoading(true);
@@ -42,11 +42,11 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 flex flex-col">
-      <div className="w-full max-w-screen-2xl mx-auto flex flex-col flex-1 min-h-0">
+    <div className="flex min-h-screen flex-col bg-gray-50 p-4">
+      <div className="mx-auto flex min-h-0 w-full max-w-screen-2xl flex-1 flex-col">
         {/* Header */}
-        <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <div className="mb-6 text-center">
+          <h1 className="mb-2 text-3xl font-bold text-gray-900">
             LLMonFHIR RAG Comparison
           </h1>
           <p className="text-gray-600">
@@ -55,9 +55,7 @@ export function App() {
         </div>
 
         {/* Split View */}
-        <div
-          className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6 flex-1 min-h-0"
-        >
+        <div className="mb-6 grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-2">
           {/* RAG Enabled Panel */}
           <ChatPanel
             title="RAG Enabled"
@@ -80,27 +78,29 @@ export function App() {
         </div>
 
         {/* Input Form */}
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="rounded-lg bg-white p-4 shadow">
           <form onSubmit={handleSubmit} className="flex gap-2">
             <input
               type="text"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(event) =>
+                setQuery((event.target as HTMLInputElement).value)
+              }
               placeholder="Ask about your health records..."
-              className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 rounded border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               disabled={loading}
             />
             <button
               type="submit"
               disabled={loading || !query.trim()}
-              className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded bg-blue-600 px-6 py-2 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? "Loading..." : "Ask"}
             </button>
             <button
               type="button"
               onClick={handleReset}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+              className="rounded bg-gray-200 px-4 py-2 text-gray-700 hover:bg-gray-300"
             >
               Clear
             </button>
@@ -109,6 +109,4 @@ export function App() {
       </div>
     </div>
   );
-}
-
-export default App;
+};

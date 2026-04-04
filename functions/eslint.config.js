@@ -6,27 +6,17 @@
 // SPDX-License-Identifier: MIT
 //
 
-import eslint from "@eslint/js";
-import tseslint from "typescript-eslint";
-import { defineConfig, globalIgnores } from "eslint/config";
+import pkg from "@stanfordspezi/spezi-web-configurations";
+const { getEslintNodeConfig } = pkg;
 
-export default defineConfig([
-  globalIgnores(["lib", "generated"]),
+export default [
+  ...getEslintNodeConfig({ tsconfigRootDir: import.meta.dirname }),
   {
-    files: ["**/*.ts"],
-    extends: [
-      eslint.configs.recommended,
-      tseslint.configs.recommended,
-    ],
-    languageOptions: {
-      ecmaVersion: 2020,
-      sourceType: "module",
-    },
+    ignores: ["lib/**/*", "generated/**/*"],
+  },
+  {
     rules: {
-      "quotes": ["error", "double"],
-      "indent": ["error", 2],
-      "max-len": ["error", { "code": 120 }],
-      "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
+      "import/no-named-as-default": "off",
     },
   },
-]);
+];

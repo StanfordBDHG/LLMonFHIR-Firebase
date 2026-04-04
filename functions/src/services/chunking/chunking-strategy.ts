@@ -6,7 +6,7 @@
 // SPDX-License-Identifier: MIT
 //
 
-import {Chunk} from "./chunk.js";
+import { type Chunk } from "./chunk.js";
 
 /**
  * A file-level chunking strategy that processes a file and produces chunks.

@@ -6,10 +6,13 @@
 // SPDX-License-Identifier: MIT
 //
 
-import {ChatCompletionMessageParam} from "openai/resources/chat/completions";
-import {ChatInterceptor} from "./chat-interceptor.js";
-import {ChatBody} from "./chat-service.js";
-import {ContextStore, RetrievedDocument} from "../context/context-store.js";
+import { type ChatCompletionMessageParam } from "openai/resources/chat/completions";
+import { type ChatInterceptor } from "./chat-interceptor.js";
+import { type ChatBody } from "./chat-service.js";
+import {
+  type ContextStore,
+  type RetrievedDocument,
+} from "../context/context-store.js";
 
 const RAG_RETRIEVAL_LIMIT = 10;
 
@@ -51,7 +54,7 @@ export class RAGChatInterceptor implements ChatInterceptor {
         ragMessage,
         ...body.messages.slice(-1),
       ];
-      return {...body, messages: newMessages};
+      return { ...body, messages: newMessages };
     } catch (error) {
       console.error("[RAG] Error retrieving context:", error);
       return body;
@@ -77,13 +80,7 @@ export class RAGChatInterceptor implements ChatInterceptor {
     if (typeof content === "string") return content;
     if (!content) return "";
     return content
-      .map((part) => {
-        if (typeof part === "string") return part;
-        if (typeof part === "object" && part !== null && "text" in part) {
-          return typeof part.text === "string" ? part.text : "";
-        }
-        return "";
-      })
+      .map((part) => ("text" in part ? part.text : ""))
       .filter(Boolean)
       .join(" ");
   }
@@ -91,7 +88,9 @@ export class RAGChatInterceptor implements ChatInterceptor {
   private formatDocuments(docs: RetrievedDocument[]): string {
     if (docs.length === 0) return "";
     return docs
-      .map((doc) => `[Document: ${doc.file} | Chunk ${doc.chunkId}]\n${doc.text}`)
+      .map(
+        (doc) => `[Document: ${doc.file} | Chunk ${doc.chunkId}]\n${doc.text}`,
+      )
       .join("\n\n---\n\n");
   }
 }

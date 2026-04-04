@@ -15,14 +15,14 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-import {setGlobalOptions} from "firebase-functions";
-import {chat} from "./functions/chat.js";
-import {onPDFUploaded} from "./functions/on-pdf-uploaded.js";
-import {onDocumentDeleted} from "./functions/on-document-deleted.js";
-import {initializeApp} from "firebase-admin/app";
+import { initializeApp } from "firebase-admin/app";
+import { setGlobalOptions } from "firebase-functions";
+import { chat } from "./functions/chat.js";
+import { onDocumentDeleted } from "./functions/on-document-deleted.js";
+import { onPDFUploaded } from "./functions/on-pdf-uploaded.js";
 
-setGlobalOptions({maxInstances: 10});
+setGlobalOptions({ maxInstances: 10 });
 
 initializeApp();
 
-export {chat, onPDFUploaded, onDocumentDeleted};
+export { chat, onPDFUploaded, onDocumentDeleted };
