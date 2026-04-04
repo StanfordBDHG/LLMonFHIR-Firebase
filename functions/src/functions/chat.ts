@@ -8,9 +8,9 @@
 
 import {HttpsError, onCall} from "firebase-functions/https";
 import OpenAI from "openai";
-import {Secrets, SERVICE_ACCOUNT} from "../env";
-import {createChatService} from "../services/create-services";
-import {ChatBody} from "../services/chat/chat-service";
+import {Secrets, SERVICE_ACCOUNT} from "../env.js";
+import {createChatService} from "../services/create-services.js";
+import {ChatBody} from "../services/chat/chat-service.js";
 
 export const chat = onCall(
   {secrets: [Secrets.OPENAI_API_KEY], serviceAccount: SERVICE_ACCOUNT, timeoutSeconds: 540, memory: "512MiB"},

@@ -6,7 +6,7 @@
 // SPDX-License-Identifier: MIT
 //
 
-import {TextChunker} from "./text-chunker";
+import {TextChunker} from "./text-chunker.js";
 
 /** Splits text into overlapping fixed-size windows. */
 export class SlidingWindowTextChunker implements TextChunker {

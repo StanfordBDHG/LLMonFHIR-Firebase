@@ -7,8 +7,8 @@
 //
 
 import {onObjectDeleted} from "firebase-functions/v2/storage";
-import {SERVICE_ACCOUNT, STORAGE_BUCKET, STORAGE_FILE_PATH_PATTERN, STORAGE_REGION} from "../env";
-import {createContextStore} from "../services/create-services";
+import {SERVICE_ACCOUNT, STORAGE_BUCKET, STORAGE_FILE_PATH_PATTERN, STORAGE_REGION} from "../env.js";
+import {createContextStore} from "../services/create-services.js";
 
 export const onDocumentDeleted = onObjectDeleted(
   {

@@ -7,7 +7,7 @@
 //
 
 import {Genkit} from "genkit";
-import {ChunkEmbedding, ContextStore, RetrievedDocument} from "./context-store";
+import {ChunkEmbedding, ContextStore, RetrievedDocument} from "./context-store.js";
 import openAI from "@genkit-ai/compat-oai/openai";
 import {FieldValue, Firestore, getFirestore} from "firebase-admin/firestore";
 import {defineFirestoreRetriever} from "@genkit-ai/firebase";

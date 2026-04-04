@@ -6,10 +6,10 @@
 // SPDX-License-Identifier: MIT
 //
 
-import {Chunk} from "./chunk";
-import {FileChunkingStrategy} from "./chunking-strategy";
-import {TextChunker} from "./text-chunking/text-chunker";
-import {TextExtractor} from "./text-extraction/text-extractor";
+import {Chunk} from "./chunk.js";
+import {FileChunkingStrategy} from "./chunking-strategy.js";
+import {TextChunker} from "./text-chunking/text-chunker.js";
+import {TextExtractor} from "./text-extraction/text-extractor.js";
 
 /**
  * Composes a {@link TextExtractor} with a {@link TextChunker} to form a

@@ -6,10 +6,10 @@
 // SPDX-License-Identifier: MIT
 //
 
-import {FileChunkingStrategy} from "../chunking/chunking-strategy";
-import {ContextStore} from "../context/context-store";
-import {EmbeddingService} from "../embedding/embedding-service";
-import {IndexingService, IndexResult} from "./indexing-service";
+import {FileChunkingStrategy} from "../chunking/chunking-strategy.js";
+import {ContextStore} from "../context/context-store.js";
+import {EmbeddingService} from "../embedding/embedding-service.js";
+import {IndexingService, IndexResult} from "./indexing-service.js";
 
 /** Default indexing pipeline: chunk → embed → store. */
 export class DefaultIndexingService implements IndexingService {

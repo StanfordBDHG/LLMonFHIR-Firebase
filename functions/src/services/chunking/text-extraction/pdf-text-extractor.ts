@@ -8,7 +8,7 @@
 
 import {extractText, getDocumentProxy} from "unpdf";
 import {readFile} from "node:fs/promises";
-import {TextExtractor} from "./text-extractor";
+import {TextExtractor} from "./text-extractor.js";
 
 /** Extracts text from PDF files using unpdf. */
 export class PDFTextExtractor implements TextExtractor {

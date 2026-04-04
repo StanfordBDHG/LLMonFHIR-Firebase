@@ -8,7 +8,7 @@
 
 import {Genkit} from "genkit";
 import openAI from "@genkit-ai/compat-oai/openai";
-import {EmbeddingService} from "./embedding-service";
+import {EmbeddingService} from "./embedding-service.js";
 
 /** Embedding service backed by Genkit + OpenAI text-embedding-3-small. */
 export class GenkitEmbeddingService implements EmbeddingService {

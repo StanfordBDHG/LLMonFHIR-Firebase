@@ -11,7 +11,7 @@ import {
   ChatCompletionCreateParamsNonStreaming,
   ChatCompletionCreateParamsStreaming,
 } from "openai/resources";
-import {ChatInterceptor} from "./chat-interceptor";
+import {ChatInterceptor} from "./chat-interceptor.js";
 
 
 export type ChatBody =

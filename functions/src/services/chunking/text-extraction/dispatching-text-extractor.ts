@@ -7,7 +7,7 @@
 //
 
 import {extname} from "node:path";
-import {TextExtractor} from "./text-extractor";
+import {TextExtractor} from "./text-extractor.js";
 
 /**
  * Selects a {@link TextExtractor} based on the file extension of the input

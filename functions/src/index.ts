@@ -16,9 +16,9 @@
  */
 
 import {setGlobalOptions} from "firebase-functions";
-import {chat} from "./functions/chat";
-import {onPDFUploaded} from "./functions/on-pdf-uploaded";
-import {onDocumentDeleted} from "./functions/on-document-deleted";
+import {chat} from "./functions/chat.js";
+import {onPDFUploaded} from "./functions/on-pdf-uploaded.js";
+import {onDocumentDeleted} from "./functions/on-document-deleted.js";
 import {initializeApp} from "firebase-admin/app";
 
 setGlobalOptions({maxInstances: 10});

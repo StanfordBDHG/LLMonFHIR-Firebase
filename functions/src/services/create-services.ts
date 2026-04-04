@@ -8,18 +8,18 @@
 
 import {genkit} from "genkit";
 import openAI from "@genkit-ai/compat-oai/openai";
-import {ChatService} from "./chat/chat-service";
-import {AgenticContextChatInterceptor} from "./chat/agentic-context-chat-interceptor";
-import {ComposedChunkingStrategy} from "./chunking/composed-chunking-strategy";
-import {DispatchingTextExtractor} from "./chunking/text-extraction/dispatching-text-extractor";
-import {PDFTextExtractor} from "./chunking/text-extraction/pdf-text-extractor";
-import {PlainTextExtractor} from "./chunking/text-extraction/plain-text-extractor";
-import {ContextStore} from "./context/context-store";
-import {FirestoreContextStore} from "./context/firestore-context-store";
-import {GenkitEmbeddingService} from "./embedding/genkit-embedding-service";
-import {IndexingService} from "./indexing/indexing-service";
-import {DefaultIndexingService} from "./indexing/default-indexing-service";
-import {SlidingWindowTextChunker} from "./chunking/text-chunking/sliding-window-text-chunker";
+import {ChatService} from "./chat/chat-service.js";
+import {AgenticContextChatInterceptor} from "./chat/agentic-context-chat-interceptor.js";
+import {ComposedChunkingStrategy} from "./chunking/composed-chunking-strategy.js";
+import {DispatchingTextExtractor} from "./chunking/text-extraction/dispatching-text-extractor.js";
+import {PDFTextExtractor} from "./chunking/text-extraction/pdf-text-extractor.js";
+import {PlainTextExtractor} from "./chunking/text-extraction/plain-text-extractor.js";
+import {ContextStore} from "./context/context-store.js";
+import {FirestoreContextStore} from "./context/firestore-context-store.js";
+import {GenkitEmbeddingService} from "./embedding/genkit-embedding-service.js";
+import {IndexingService} from "./indexing/indexing-service.js";
+import {DefaultIndexingService} from "./indexing/default-indexing-service.js";
+import {SlidingWindowTextChunker} from "./chunking/text-chunking/sliding-window-text-chunker.js";
 
 export interface ServiceOptions {
   studyId: string;

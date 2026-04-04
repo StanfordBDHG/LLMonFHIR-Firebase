@@ -8,11 +8,11 @@
 
 import OpenAI from "openai";
 import {ChatCompletionMessageParam} from "openai/resources/chat/completions";
-import {ChatInterceptor} from "./chat-interceptor";
-import {ChatBody} from "./chat-service";
-import {ContextStore, RetrievedDocument} from "../context/context-store";
+import {ChatInterceptor} from "./chat-interceptor.js";
+import {ChatBody} from "./chat-service.js";
+import {ContextStore, RetrievedDocument} from "../context/context-store.js";
 import {z} from "genkit";
-import {VERBOSE_LOGGING} from "../../env";
+import {VERBOSE_LOGGING} from "../../env.js";
 
 const RAG_QUERY_PROMPT = `
 You are a context retrieval assistant. Based on the conversation, determine what information 

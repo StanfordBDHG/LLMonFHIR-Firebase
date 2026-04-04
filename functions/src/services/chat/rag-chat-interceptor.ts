@@ -7,9 +7,9 @@
 //
 
 import {ChatCompletionMessageParam} from "openai/resources/chat/completions";
-import {ChatInterceptor} from "./chat-interceptor";
-import {ChatBody} from "./chat-service";
-import {ContextStore, RetrievedDocument} from "../context/context-store";
+import {ChatInterceptor} from "./chat-interceptor.js";
+import {ChatBody} from "./chat-service.js";
+import {ContextStore, RetrievedDocument} from "../context/context-store.js";
 
 const RAG_RETRIEVAL_LIMIT = 10;
 

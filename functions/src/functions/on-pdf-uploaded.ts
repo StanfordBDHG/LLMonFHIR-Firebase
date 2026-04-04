@@ -12,8 +12,8 @@ import {extname, join} from "node:path";
 import {tmpdir} from "node:os";
 import {randomUUID} from "node:crypto";
 import {getStorage} from "firebase-admin/storage";
-import {Secrets, SERVICE_ACCOUNT, STORAGE_BUCKET, STORAGE_FILE_PATH_PATTERN, STORAGE_REGION} from "../env";
-import {createIndexingService} from "../services/create-services";
+import {Secrets, SERVICE_ACCOUNT, STORAGE_BUCKET, STORAGE_FILE_PATH_PATTERN, STORAGE_REGION} from "../env.js";
+import {createIndexingService} from "../services/create-services.js";
 
 const SUPPORTED_CONTENT_TYPES = new Set([
   "application/pdf",

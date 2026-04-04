@@ -7,7 +7,7 @@
 //
 
 import {readFile} from "node:fs/promises";
-import {TextExtractor} from "./text-extractor";
+import {TextExtractor} from "./text-extractor.js";
 
 /** Extracts text from plain-text files (e.g. .txt, .md, .rtf). */
 export class PlainTextExtractor implements TextExtractor {
