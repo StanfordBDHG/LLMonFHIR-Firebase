@@ -8,7 +8,8 @@
 
 import {genkit} from "genkit";
 import openAI from "@genkit-ai/compat-oai/openai";
-import {ChatService} from "./chat/chat-service";
+import OpenAI from "openai";
+import {ChatService, ModelOverrides} from "./chat/chat-service";
 import {AgenticContextChatInterceptor} from "./chat/agentic-context-chat-interceptor";
 import {ComposedChunkingStrategy} from "./chunking/composed-chunking-strategy";
 import {DispatchingTextExtractor} from "./chunking/text-extraction/dispatching-text-extractor";
@@ -21,9 +22,22 @@ import {IndexingService} from "./indexing/indexing-service";
 import {DefaultIndexingService} from "./indexing/default-indexing-service";
 import {SlidingWindowTextChunker} from "./chunking/text-chunking/sliding-window-text-chunker";
 
+export type LLMService = "openAI" | "gemini";
+
+const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/";
+const GEMINI_MODEL_OVERRIDES: ModelOverrides = {
+  "gpt-4o": "gemini-2.5-flash",
+  "gpt-4o-mini": "gemini-2.5-flash-lite",
+  "gpt-5.4": "gemini-3.1-pro-preview",
+  "gpt-5.4-nano": "gemini-3.1-flash-lite-preview",
+  "default": "gemini-3-flash-preview",
+};
+
 export interface ServiceOptions {
   studyId: string;
   openAIApiKey: string;
+  geminiApiKey?: string;
+  service?: LLMService;
   ragEnabled?: boolean;
 }
 
@@ -31,19 +45,34 @@ function createAI(openAIApiKey: string) {
   return genkit({plugins: [openAI({apiKey: openAIApiKey})]});
 }
 
+function createLLMClient(options: ServiceOptions): { client: OpenAI; modelOverrides?: ModelOverrides } {
+  if (options.service === "gemini") {
+    if (!options.geminiApiKey) {
+      throw new Error("Gemini API key is required when service is 'gemini'");
+    }
+    return {
+      client: new OpenAI({apiKey: options.geminiApiKey, baseURL: GEMINI_BASE_URL}),
+      modelOverrides: GEMINI_MODEL_OVERRIDES,
+    };
+  }
+  return {client: new OpenAI({apiKey: options.openAIApiKey})};
+}
+
 export function createContextStore(studyId: string): ContextStore {
   return new FirestoreContextStore(studyId, genkit({plugins: []}));
 }
 
 export function createChatService(options: ServiceOptions): ChatService {
+  const {client, modelOverrides} = createLLMClient(options);
   if (!options.ragEnabled) {
-    return new ChatService(options.openAIApiKey, []);
+    return new ChatService(client, []);
   }
   const ai = createAI(options.openAIApiKey);
   const contextStore = new FirestoreContextStore(options.studyId, ai);
   return new ChatService(
-    options.openAIApiKey,
-    [new AgenticContextChatInterceptor(options.openAIApiKey, contextStore)],
+    client,
+    [new AgenticContextChatInterceptor(client, contextStore)],
+    modelOverrides,
   );
 }
 

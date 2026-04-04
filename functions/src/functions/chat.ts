@@ -11,14 +11,21 @@ import OpenAI from "openai";
 import {Secrets, SERVICE_ACCOUNT} from "../env";
 import {createChatService} from "../services/create-services";
 import {ChatBody} from "../services/chat/chat-service";
+import {z} from "genkit";
 
 export const chat = onCall(
-  {secrets: [Secrets.OPENAI_API_KEY], serviceAccount: SERVICE_ACCOUNT, timeoutSeconds: 540, memory: "512MiB"},
+  {
+    secrets: [Secrets.OPENAI_API_KEY, Secrets.GEMINI_API_KEY],
+    serviceAccount: SERVICE_ACCOUNT,
+    timeoutSeconds: 540,
+    memory: "512MiB",
+  },
   async (req, res): Promise<string | void> => {
     if (!req.auth?.token) {
       throw new HttpsError("unauthenticated", "User must be authenticated");
     }
 
+    const service = z.enum(["gemini", "openAI"]).safeParse(req.rawRequest.query.service).data ?? "openAI";
     const ragEnabled = req.rawRequest.query.ragEnabled === "true";
 
     const studyId = req.rawRequest.query.studyId;
@@ -31,6 +38,8 @@ export const chat = onCall(
       const chatService = createChatService({
         studyId,
         openAIApiKey: Secrets.OPENAI_API_KEY.value(),
+        geminiApiKey: Secrets.GEMINI_API_KEY.value(),
+        service,
         ragEnabled,
       });
 

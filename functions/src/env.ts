@@ -10,6 +10,7 @@ import {defineSecret} from "firebase-functions/params";
 
 export const Secrets = {
   OPENAI_API_KEY: defineSecret("OPENAI_API_KEY"),
+  GEMINI_API_KEY: defineSecret("GEMINI_API_KEY"),
 };
 
 export const SERVICE_ACCOUNT = `cloud-function-sa@${process.env.GCLOUD_PROJECT}.iam.gserviceaccount.com`;

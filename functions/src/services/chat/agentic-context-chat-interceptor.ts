@@ -58,14 +58,10 @@ const RETRIEVE_CONTEXT_TOOL: OpenAI.ChatCompletionTool = {
  * without context.
  */
 export class AgenticContextChatInterceptor implements ChatInterceptor {
-  private readonly openai: OpenAI;
-
   constructor(
-    apiKey: string,
+    private readonly client: OpenAI,
     private readonly contextStore: ContextStore,
-  ) {
-    this.openai = new OpenAI({apiKey});
-  }
+  ) {}
 
   async intercept(body: ChatBody): Promise<ChatBody> {
     try {
@@ -129,7 +125,7 @@ export class AgenticContextChatInterceptor implements ChatInterceptor {
   private async determineQueries(body: ChatBody): Promise<string[]> {
     const messages = this.buildInternalMessages(body.messages);
 
-    const response = await this.openai.chat.completions.create({
+    const response = await this.client.chat.completions.create({
       model: body.model,
       messages,
       tools: [RETRIEVE_CONTEXT_TOOL],
