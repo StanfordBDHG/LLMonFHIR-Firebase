@@ -86,13 +86,15 @@ export class FirestoreContextStore implements ContextStore {
     const bulkWriter = this.firestore.bulkWriter();
     try {
       const collection = this.firestore.collection(this.collectionName);
-      chunks.forEach((chunk, index) =>
-        bulkWriter.create(collection.doc(), {
-          text: chunk.text,
-          embedding: FieldValue.vector(chunk.embedding ?? []),
-          file: filename,
-          chunkId: index,
-        }),
+      await Promise.all(
+        chunks.map((chunk, index) =>
+          bulkWriter.create(collection.doc(), {
+            text: chunk.text,
+            embedding: FieldValue.vector(chunk.embedding ?? []),
+            file: filename,
+            chunkId: index,
+          }),
+        ),
       );
     } finally {
       await bulkWriter.close();
@@ -112,7 +114,7 @@ export class FirestoreContextStore implements ContextStore {
 
     const bulkWriter = this.firestore.bulkWriter();
     try {
-      snapshot.docs.forEach((doc) => bulkWriter.delete(doc.ref));
+      await Promise.all(snapshot.docs.map((doc) => bulkWriter.delete(doc.ref)));
     } finally {
       await bulkWriter.close();
     }
