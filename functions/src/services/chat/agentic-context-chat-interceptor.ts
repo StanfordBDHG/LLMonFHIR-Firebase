@@ -6,13 +6,16 @@
 // SPDX-License-Identifier: MIT
 //
 
+import { z } from "genkit";
 import OpenAI from "openai";
-import {ChatCompletionMessageParam} from "openai/resources/chat/completions";
-import {ChatInterceptor} from "./chat-interceptor";
-import {ChatBody} from "./chat-service";
-import {ContextStore, RetrievedDocument} from "../context/context-store";
-import {z} from "genkit";
-import {VERBOSE_LOGGING} from "../../env";
+import { type ChatCompletionMessageParam } from "openai/resources/chat/completions";
+import { type ChatInterceptor } from "./chat-interceptor.js";
+import { type ChatBody } from "./chat-service.js";
+import { VERBOSE_LOGGING } from "../../env.js";
+import {
+  type ContextStore,
+  type RetrievedDocument,
+} from "../context/context-store.js";
 
 const RAG_QUERY_PROMPT = `
 You are a context retrieval assistant. Based on the conversation, determine what information 
@@ -64,7 +67,7 @@ export class AgenticContextChatInterceptor implements ChatInterceptor {
     apiKey: string,
     private readonly contextStore: ContextStore,
   ) {
-    this.openai = new OpenAI({apiKey});
+    this.openai = new OpenAI({ apiKey });
   }
 
   async intercept(body: ChatBody): Promise<ChatBody> {
@@ -85,19 +88,25 @@ export class AgenticContextChatInterceptor implements ChatInterceptor {
 
       const queries = await this.determineQueries(body);
       if (queries.length === 0) {
-        console.warn("[AgenticRAG] No queries generated, skipping context injection");
+        console.warn(
+          "[AgenticRAG] No queries generated, skipping context injection",
+        );
         return body;
       }
 
       if (VERBOSE_LOGGING) {
-        console.log(`[AgenticRAG] Using queries: [${queries.map((query) => `"${query}"`).join(", ")}]`);
+        console.log(
+          `[AgenticRAG] Using queries: [${queries.map((query) => `"${query}"`).join(", ")}]`,
+        );
       }
 
       const docs = await Promise.all(
         queries.map((q) => this.contextStore.retrieve(q, RAG_RETRIEVAL_LIMIT)),
       );
-      const ragDocs =
-        docs.flat().sort((a, b) => (a.distance ?? 1) - (b.distance ?? 1)).slice(0, RAG_RETRIEVAL_LIMIT);
+      const ragDocs = docs
+        .flat()
+        .sort((a, b) => (a.distance ?? 1) - (b.distance ?? 1))
+        .slice(0, RAG_RETRIEVAL_LIMIT);
       const ragContext = this.formatDocuments(ragDocs);
 
       if (!ragContext) {
@@ -105,13 +114,16 @@ export class AgenticContextChatInterceptor implements ChatInterceptor {
         return body;
       }
 
+      const ragContent = `[Retrieved Context from Knowledge Base]:\n${ragContext}`;
       const ragMessage: ChatCompletionMessageParam = {
         role: "system",
-        content: `[Retrieved Context from Knowledge Base]:\n${ragContext}`,
+        content: ragContent,
       };
 
       if (VERBOSE_LOGGING) {
-        console.log(`[AgenticRAG] Injecting RAG context message before last user message:\n\n${ragMessage.content}`);
+        console.log(
+          `[AgenticRAG] Injecting RAG context message before last user message:\n\n${ragContent}`,
+        );
       }
 
       const newMessages = [
@@ -119,7 +131,7 @@ export class AgenticContextChatInterceptor implements ChatInterceptor {
         ragMessage,
         ...body.messages.slice(-1),
       ];
-      return {...body, messages: newMessages};
+      return { ...body, messages: newMessages };
     } catch (error) {
       console.error("[AgenticRAG] Error during context injection:", error);
       return body;
@@ -133,13 +145,16 @@ export class AgenticContextChatInterceptor implements ChatInterceptor {
       model: body.model,
       messages,
       tools: [RETRIEVE_CONTEXT_TOOL],
-      tool_choice: {type: "function", function: {name: "retrieve_context"}},
+      tool_choice: { type: "function", function: { name: "retrieve_context" } },
       stream: false,
     });
 
-    const toolCalls = response.choices.flatMap((choice) => choice.message?.tool_calls ?? []).filter(
-      (tc) => tc.type === "function" && tc.function.name === "retrieve_context",
-    ) as OpenAI.ChatCompletionMessageFunctionToolCall[];
+    const toolCalls = response.choices
+      .flatMap((choice) => choice.message.tool_calls ?? [])
+      .filter(
+        (tc) =>
+          tc.type === "function" && tc.function.name === "retrieve_context",
+      ) as OpenAI.ChatCompletionMessageFunctionToolCall[];
 
     if (toolCalls.length === 0) {
       console.warn("[AgenticRAG] No retrieve_context tool call in response");
@@ -147,8 +162,12 @@ export class AgenticContextChatInterceptor implements ChatInterceptor {
     }
 
     try {
-      const parsedArguments = z.object({query: z.string()}).array()
-        .parse(toolCalls.map((tc) => JSON.parse(tc.function.arguments)));
+      const parsedArguments = z
+        .object({ query: z.string() })
+        .array()
+        .parse(
+          toolCalls.map((tc) => JSON.parse(tc.function.arguments) as unknown),
+        );
       return parsedArguments.map((args) => args.query);
     } catch (error) {
       console.error(
@@ -167,14 +186,14 @@ export class AgenticContextChatInterceptor implements ChatInterceptor {
     const firstSystemIndex = messages.findIndex((m) => m.role === "system");
     const originalSystemContent =
       firstSystemIndex >= 0 ?
-        this.extractTextContent(messages[firstSystemIndex].content) :
-        null;
+        this.extractTextContent(messages[firstSystemIndex].content)
+      : null;
 
     const adaptedSystemPrompt = [
       RAG_QUERY_PROMPT,
       ...(originalSystemContent ?
-        ["", `Original system instructions: """${originalSystemContent}"""`] :
-        []),
+        ["", `Original system instructions: """${originalSystemContent}"""`]
+      : []),
     ].join("\n");
 
     const adaptedSystemMessage: ChatCompletionMessageParam = {
@@ -183,7 +202,11 @@ export class AgenticContextChatInterceptor implements ChatInterceptor {
     };
 
     // Replace the first system message (or prepend one), keep remaining non-tool messages
-    return [...messages.slice(0, firstSystemIndex), adaptedSystemMessage, ...messages.slice(firstSystemIndex + 1)];
+    return [
+      ...messages.slice(0, firstSystemIndex),
+      adaptedSystemMessage,
+      ...messages.slice(firstSystemIndex + 1),
+    ];
   }
 
   private extractTextContent(
@@ -192,13 +215,7 @@ export class AgenticContextChatInterceptor implements ChatInterceptor {
     if (typeof content === "string") return content;
     if (!content) return "";
     return content
-      .map((part) => {
-        if (typeof part === "string") return part;
-        if (typeof part === "object" && part !== null && "text" in part) {
-          return typeof part.text === "string" ? part.text : "";
-        }
-        return "";
-      })
+      .map((part) => ("text" in part ? part.text : ""))
       .filter(Boolean)
       .join(" ");
   }
@@ -206,7 +223,9 @@ export class AgenticContextChatInterceptor implements ChatInterceptor {
   private formatDocuments(docs: RetrievedDocument[]): string {
     if (docs.length === 0) return "";
     return docs
-      .map((doc) => `[Document: ${doc.file} | Chunk ${doc.chunkId}]\n${doc.text}`)
+      .map(
+        (doc) => `[Document: ${doc.file} | Chunk ${doc.chunkId}]\n${doc.text}`,
+      )
       .join("\n\n---\n\n");
   }
 }

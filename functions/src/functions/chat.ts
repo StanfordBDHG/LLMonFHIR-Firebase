@@ -6,15 +6,20 @@
 // SPDX-License-Identifier: MIT
 //
 
-import {HttpsError, onCall} from "firebase-functions/https";
+import { HttpsError, onCall } from "firebase-functions/https";
 import OpenAI from "openai";
-import {Secrets, SERVICE_ACCOUNT} from "../env";
-import {createChatService} from "../services/create-services";
-import {ChatBody} from "../services/chat/chat-service";
+import { Secrets, SERVICE_ACCOUNT } from "../env.js";
+import { type ChatBody } from "../services/chat/chat-service.js";
+import { createChatService } from "../services/create-services.js";
 
 export const chat = onCall(
-  {secrets: [Secrets.OPENAI_API_KEY], serviceAccount: SERVICE_ACCOUNT, timeoutSeconds: 540, memory: "512MiB"},
-  async (req, res): Promise<string | void> => {
+  {
+    secrets: [Secrets.OPENAI_API_KEY],
+    serviceAccount: SERVICE_ACCOUNT,
+    timeoutSeconds: 540,
+    memory: "512MiB",
+  },
+  async (req, res): Promise<string | undefined> => {
     if (!req.auth?.token) {
       throw new HttpsError("unauthenticated", "User must be authenticated");
     }
@@ -23,10 +28,13 @@ export const chat = onCall(
 
     const studyId = req.rawRequest.query.studyId;
     if (typeof studyId !== "string" || !studyId) {
-      throw new HttpsError("invalid-argument", "Missing or invalid studyId query parameter");
+      throw new HttpsError(
+        "invalid-argument",
+        "Missing or invalid studyId query parameter",
+      );
     }
 
-    const chatBody = JSON.parse(req.data) as ChatBody;
+    const chatBody = JSON.parse(req.data as string) as ChatBody;
     try {
       const chatService = createChatService({
         studyId,
@@ -41,9 +49,15 @@ export const chat = onCall(
             "Streaming responses are not supported in this environment",
           );
         }
-        return await chatService.chatStreaming(chatBody, (chunk) => res.sendChunk(chunk));
+        await chatService.chatStreaming(chatBody, (chunk) =>
+          res.sendChunk(chunk),
+        );
+        return;
       } else {
-        return await chatService.chatNonStreaming({...chatBody, stream: false});
+        return await chatService.chatNonStreaming({
+          ...chatBody,
+          stream: false,
+        });
       }
     } catch (error: unknown) {
       console.error("Error in chat endpoint:", error);
@@ -54,27 +68,33 @@ export const chat = onCall(
 
 // ── Error formatting ────────────────────────────────────────────────────────
 
-function formatErrorResponse(error: unknown, isStreaming: boolean): string {
-  const isOpenAIError = error instanceof OpenAI.APIError;
-  const apiError = isOpenAIError ? error : undefined;
-  const openAIError = isOpenAIError ? apiError?.error : undefined;
-  const fallbackMessage =
-    error instanceof Error ? error.message : "Internal server error";
+const formatErrorResponse = (error: unknown, isStreaming: boolean): string => {
+  if (!(error instanceof OpenAI.APIError)) {
+    const fallbackMessage =
+      error instanceof Error ? error.message : "Internal server error";
+    const payload = {
+      error: { message: fallbackMessage, type: "server_error" },
+    };
+    if (isStreaming) {
+      return `data: ${JSON.stringify(payload)}\n\ndata: [DONE]\n\n`;
+    }
+    return JSON.stringify(payload);
+  }
 
-  const payload = isOpenAIError ?
-    {
-      error: {
-        message:
-            openAIError?.message ?? apiError?.message ?? "OpenAI error",
-        type: openAIError?.type ?? "openai_error",
-        code: openAIError?.code ?? null,
-        param: openAIError?.param ?? null,
-      },
-    } :
-    {error: {message: fallbackMessage, type: "server_error"}};
+  const openAIError = error.error as
+    | { message?: string; type?: string; code?: string; param?: string }
+    | undefined;
+  const payload = {
+    error: {
+      message: openAIError?.message ?? error.message,
+      type: openAIError?.type ?? "openai_error",
+      code: openAIError?.code ?? null,
+      param: openAIError?.param ?? null,
+    },
+  };
 
   if (isStreaming) {
     return `data: ${JSON.stringify(payload)}\n\ndata: [DONE]\n\n`;
   }
   return JSON.stringify(payload);
-}
+};

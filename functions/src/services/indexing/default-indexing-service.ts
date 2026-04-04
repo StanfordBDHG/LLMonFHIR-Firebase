@@ -6,10 +6,10 @@
 // SPDX-License-Identifier: MIT
 //
 
-import {FileChunkingStrategy} from "../chunking/chunking-strategy";
-import {ContextStore} from "../context/context-store";
-import {EmbeddingService} from "../embedding/embedding-service";
-import {IndexingService, IndexResult} from "./indexing-service";
+import { type IndexingService, type IndexResult } from "./indexing-service.js";
+import { type FileChunkingStrategy } from "../chunking/chunking-strategy.js";
+import { type ContextStore } from "../context/context-store.js";
+import { type EmbeddingService } from "../embedding/embedding-service.js";
 
 /** Default indexing pipeline: chunk → embed → store. */
 export class DefaultIndexingService implements IndexingService {
@@ -38,11 +38,11 @@ export class DefaultIndexingService implements IndexingService {
         })),
       );
 
-      return {success: true, chunksIndexed: chunks.length};
+      return { success: true, chunksIndexed: chunks.length };
     } catch (err) {
       const error = err instanceof Error ? err.message : String(err);
       console.error(`[Indexing] Error indexing ${fileName}:`, error);
-      return {success: false, chunksIndexed: 0, error};
+      return { success: false, chunksIndexed: 0, error };
     }
   }
 }

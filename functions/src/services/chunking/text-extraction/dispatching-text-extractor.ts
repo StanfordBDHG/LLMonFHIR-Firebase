@@ -6,8 +6,8 @@
 // SPDX-License-Identifier: MIT
 //
 
-import {extname} from "node:path";
-import {TextExtractor} from "./text-extractor";
+import { extname } from "node:path";
+import { type TextExtractor } from "./text-extractor.js";
 
 /**
  * Selects a {@link TextExtractor} based on the file extension of the input
@@ -15,7 +15,7 @@ import {TextExtractor} from "./text-extractor";
  */
 export class DispatchingTextExtractor implements TextExtractor {
   constructor(
-    private readonly extractors: Record<string, TextExtractor>,
+    private readonly extractors: Partial<Record<string, TextExtractor>>,
   ) {}
 
   async extract(filePath: string): Promise<string[]> {

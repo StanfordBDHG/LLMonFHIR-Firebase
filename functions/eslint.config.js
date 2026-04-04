@@ -7,11 +7,16 @@
 //
 
 import pkg from "@stanfordspezi/spezi-web-configurations";
-const { getEslintReactConfig } = pkg;
+const { getEslintNodeConfig } = pkg;
 
 export default [
-  ...getEslintReactConfig({ tsconfigRootDir: import.meta.dirname }),
+  ...getEslintNodeConfig({ tsconfigRootDir: import.meta.dirname }),
   {
-    ignores: ["dist", "*.config.js", "*.config.ts", ".prettierrc.js"],
+    ignores: ["lib/**/*", "generated/**/*"],
+  },
+  {
+    rules: {
+      "import/no-named-as-default": "off",
+    },
   },
 ];

@@ -6,17 +6,24 @@
 // SPDX-License-Identifier: MIT
 //
 
-import { useMemo, useState } from "react";
+import { initializeApp } from "firebase/app";
+import {
+  connectAuthEmulator,
+  initializeAuth,
+  signInAnonymously,
+} from "firebase/auth";
+import {
+  connectFunctionsEmulator,
+  getFunctions,
+  httpsCallable,
+} from "firebase/functions";
 import OpenAI from "openai";
 import type {
-  ChatCompletionChunk,
   ChatCompletionMessageParam,
   ChatCompletionMessageToolCall,
   ChatCompletionTool,
 } from "openai/resources/chat/completions";
-import { initializeApp } from "firebase/app";
-import { connectFunctionsEmulator, getFunctions, httpsCallable } from "firebase/functions";
-import { connectAuthEmulator, getAuth, initializeAuth, signInAnonymously } from "firebase/auth";
+import { useMemo, useState } from "react";
 
 export interface RagContextInfo {
   context: string;
@@ -47,17 +54,18 @@ connectFunctionsEmulator(functions, "localhost", 5001);
 const createOpenAIClient = (ragEnabled: boolean) => {
   const customFetch = async (
     url: string | Request | URL,
-    init?: RequestInit
+    init?: RequestInit,
   ): Promise<Response> => {
-    const urlString = typeof url === "string" ? url : url.toString();
+    const urlString =
+      typeof url === "string" ? url
+      : url instanceof URL ? url.href
+      : url.url;
     if (urlString.includes("/v1/chat/completions")) {
       await signInAnonymously(auth);
-      const studyId =
-        process.env.STUDY_ID || "edu.stanford.LLMonFHIR.spineAI";
-      const name =
-        `chat?studyId=${studyId}&ragEnabled=${ragEnabled}`
+      const studyId = process.env.STUDY_ID ?? "edu.stanford.LLMonFHIR.spineAI";
+      const name = `chat?studyId=${studyId}&ragEnabled=${ragEnabled}`;
       const callable = httpsCallable(functions, name);
-      const {stream, data} = await callable.stream(init?.body);
+      const { stream, data } = await callable.stream(init?.body);
       const responseStream = new ReadableStream({
         start: async (controller) => {
           try {
@@ -70,7 +78,7 @@ const createOpenAIClient = (ragEnabled: boolean) => {
           } catch (error) {
             controller.error(error);
           }
-        }
+        },
       });
 
       return new Response(responseStream, {
@@ -147,7 +155,8 @@ const tools: ChatCompletionTool[] = [
         properties: {
           resourceCategories: {
             type: "array",
-            description: "Pass in one or more identifiers that you want to access.",
+            description:
+              "Pass in one or more identifiers that you want to access.",
             items: {
               type: "string",
               enum: [
@@ -183,7 +192,7 @@ const executeToolCall = (toolCall: {
   function: { name: string; arguments: string };
 }): string => {
   const { name, arguments: argsStr } = toolCall.function;
-  const args = JSON.parse(argsStr || "{}");
+  const args = JSON.parse(argsStr || "{}") as Record<string, unknown>;
 
   if (name === "get_resources") {
     const { resourceCategories } = args as { resourceCategories?: unknown };
@@ -192,7 +201,7 @@ const executeToolCall = (toolCall: {
     return (resourceCategories as string[])
       .map(
         (category) =>
-          MOCK_RESPONSES[category] || `No data available for ${category}`
+          MOCK_RESPONSES[category] || `No data available for ${category}`,
       )
       .join("\n\n");
   }
@@ -201,7 +210,7 @@ const executeToolCall = (toolCall: {
 };
 
 const buildMessagesForAPI = (
-  history: Message[]
+  history: Message[],
 ): ChatCompletionMessageParam[] => {
   const api: ChatCompletionMessageParam[] = [
     { role: "system", content: SYSTEM_PROMPT },
@@ -211,7 +220,7 @@ const buildMessagesForAPI = (
     if (m.role === "system") continue;
 
     if (m.role === "user") {
-      api.push({ role: "user", content: m.content ?? "" });
+      api.push({ role: "user", content: m.content });
       continue;
     }
 
@@ -223,18 +232,16 @@ const buildMessagesForAPI = (
           tool_calls: m.tool_calls,
         });
       } else {
-        api.push({ role: "assistant", content: m.content ?? "" });
+        api.push({ role: "assistant", content: m.content });
       }
       continue;
     }
 
-    if (m.role === "tool") {
-      api.push({
-        role: "tool",
-        content: m.content ?? "",
-        tool_call_id: m.tool_call_id ?? "",
-      });
-    }
+    api.push({
+      role: "tool",
+      content: m.content,
+      tool_call_id: m.tool_call_id ?? "",
+    });
   }
 
   return api;
@@ -286,6 +293,7 @@ export function useChat(options: UseChatOptions = {}) {
     let responseText = "";
     let responseIndex = currentMessages.length;
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     while (true) {
       try {
         const stream = await openai.chat.completions.create({
@@ -305,19 +313,17 @@ export function useChat(options: UseChatOptions = {}) {
             continue;
           }
 
-          const typedChunk = chunk as ChatCompletionChunk;
-          const choice = typedChunk.choices?.[0];
-          if (!choice) continue;
+          const choice = chunk.choices[0];
 
-          if (choice.delta?.content) {
+          if (choice.delta.content) {
             responseText += choice.delta.content;
             setCurrentResponse(responseText);
           }
 
-          const deltas = choice.delta?.tool_calls;
+          const deltas = choice.delta.tool_calls;
           if (deltas) {
             for (const tc of deltas) {
-              const idx = tc.index ?? 0;
+              const idx = tc.index;
               const existing = toolCallsByIndex.get(idx) ?? {
                 index: idx,
                 id: "",
@@ -327,9 +333,10 @@ export function useChat(options: UseChatOptions = {}) {
 
               if (tc.id) existing.id = tc.id;
               if (tc.type) existing.type = "function";
-              if (tc.function?.name) existing.function.name = tc.function.name;
-              if (tc.function?.arguments) {
-                existing.function.arguments += tc.function.arguments;
+              const fn = tc.function;
+              if (fn?.name) existing.function.name = fn.name;
+              if (fn?.arguments) {
+                existing.function.arguments += fn.arguments;
               }
 
               toolCallsByIndex.set(idx, existing);
@@ -342,10 +349,10 @@ export function useChat(options: UseChatOptions = {}) {
         }
 
         const toolCalls = [...toolCallsByIndex.values()].sort(
-          (a, b) => a.index - b.index
+          (a, b) => a.index - b.index,
         );
 
-          if (toolCalls.length > 0 || finishReason === "tool_calls") {
+        if (toolCalls.length > 0 || finishReason === "tool_calls") {
           setCurrentResponse("");
           setMessages((prev) => [
             ...prev,
@@ -355,7 +362,6 @@ export function useChat(options: UseChatOptions = {}) {
               tool_calls: toolCalls as ChatCompletionMessageToolCall[],
             },
           ]);
-
 
           const toolResults: Message[] = toolCalls.map((tc) => {
             const result = executeToolCall({

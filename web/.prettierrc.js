@@ -6,10 +6,8 @@
 // SPDX-License-Identifier: MIT
 //
 
-import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import pkg from "@stanfordspezi/spezi-web-configurations";
 
-// https://vite.dev/config/
-export default defineConfig({
-  plugins: [react()],
-});
+const { prettierConfig } = pkg;
+
+export default prettierConfig;

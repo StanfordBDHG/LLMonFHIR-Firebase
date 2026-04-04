@@ -6,9 +6,9 @@
 // SPDX-License-Identifier: MIT
 //
 
-import {Genkit} from "genkit";
 import openAI from "@genkit-ai/compat-oai/openai";
-import {EmbeddingService} from "./embedding-service";
+import { type Genkit } from "genkit";
+import { type EmbeddingService } from "./embedding-service.js";
 
 /** Embedding service backed by Genkit + OpenAI text-embedding-3-small. */
 export class GenkitEmbeddingService implements EmbeddingService {
@@ -29,7 +29,7 @@ export class GenkitEmbeddingService implements EmbeddingService {
     const concurrency = 5;
     for (let i = 0; i < texts.length; i += concurrency) {
       const slice = texts.slice(i, i + concurrency);
-      results.push(...await Promise.all(slice.map((t) => this.embed(t))));
+      results.push(...(await Promise.all(slice.map((t) => this.embed(t)))));
     }
     return results;
   }

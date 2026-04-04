@@ -6,11 +6,19 @@
 // SPDX-License-Identifier: MIT
 //
 
-import {Genkit} from "genkit";
-import {ChunkEmbedding, ContextStore, RetrievedDocument} from "./context-store";
 import openAI from "@genkit-ai/compat-oai/openai";
-import {FieldValue, Firestore, getFirestore} from "firebase-admin/firestore";
-import {defineFirestoreRetriever} from "@genkit-ai/firebase";
+import { defineFirestoreRetriever } from "@genkit-ai/firebase";
+import {
+  FieldValue,
+  type Firestore,
+  getFirestore,
+} from "firebase-admin/firestore";
+import { type Genkit } from "genkit";
+import {
+  type ChunkEmbedding,
+  type ContextStore,
+  type RetrievedDocument,
+} from "./context-store.js";
 
 export class FirestoreContextStore implements ContextStore {
   private readonly collectionName: string;
@@ -41,24 +49,27 @@ export class FirestoreContextStore implements ContextStore {
     const docs = await this.ai.retrieve({
       retriever: this.retriever,
       query,
-      options: {limit},
+      options: { limit },
     });
 
     return docs.map((doc) => {
-      const distance = doc.metadata?.distance as number | undefined;
+      const metadata = doc.metadata as Record<string, unknown> | undefined;
+      const distance = metadata?.distance as number | undefined;
       const similarity = distance !== undefined ? 1 - distance : undefined;
       console.log(
-        `[ContextStore] chunk ${doc.metadata?.file}#${doc.metadata?.chunkId}` +
-          (similarity !== undefined ? ` similarity=${similarity.toFixed(3)}` : ""),
+        `[ContextStore] chunk ${String(metadata?.file)}#${String(metadata?.chunkId)}` +
+          (similarity !== undefined ?
+            ` similarity=${similarity.toFixed(3)}`
+          : ""),
       );
       return {
         text: doc.content
-          .map((p) => p?.text ?? "")
+          .map((p) => p.text ?? "")
           .filter(Boolean)
           .join("\n"),
         distance: distance ?? null,
-        file: doc.metadata?.file ?? "Unknown",
-        chunkId: doc.metadata?.chunkId ?? -1,
+        file: typeof metadata?.file === "string" ? metadata.file : "Unknown",
+        chunkId: Number(metadata?.chunkId ?? -1),
       };
     });
   }
@@ -75,13 +86,15 @@ export class FirestoreContextStore implements ContextStore {
     const bulkWriter = this.firestore.bulkWriter();
     try {
       const collection = this.firestore.collection(this.collectionName);
-      chunks.forEach((chunk, index) =>
-        bulkWriter.create(collection.doc(), {
-          text: chunk.text,
-          embedding: FieldValue.vector(chunk.embedding ?? []),
-          file: filename,
-          chunkId: index,
-        }),
+      await Promise.all(
+        chunks.map((chunk, index) =>
+          bulkWriter.create(collection.doc(), {
+            text: chunk.text,
+            embedding: FieldValue.vector(chunk.embedding ?? []),
+            file: filename,
+            chunkId: index,
+          }),
+        ),
       );
     } finally {
       await bulkWriter.close();
@@ -101,7 +114,7 @@ export class FirestoreContextStore implements ContextStore {
 
     const bulkWriter = this.firestore.bulkWriter();
     try {
-      snapshot.docs.forEach((doc) => bulkWriter.delete(doc.ref));
+      await Promise.all(snapshot.docs.map((doc) => bulkWriter.delete(doc.ref)));
     } finally {
       await bulkWriter.close();
     }

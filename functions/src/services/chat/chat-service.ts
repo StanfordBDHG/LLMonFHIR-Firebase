@@ -8,11 +8,10 @@
 
 import OpenAI from "openai";
 import {
-  ChatCompletionCreateParamsNonStreaming,
-  ChatCompletionCreateParamsStreaming,
+  type ChatCompletionCreateParamsNonStreaming,
+  type ChatCompletionCreateParamsStreaming,
 } from "openai/resources";
-import {ChatInterceptor} from "./chat-interceptor";
-
+import { type ChatInterceptor } from "./chat-interceptor.js";
 
 export type ChatBody =
   | ChatCompletionCreateParamsStreaming
@@ -28,20 +27,31 @@ export class ChatService {
     apiKey: string,
     private readonly interceptors: ChatInterceptor[],
   ) {
-    this.openai = new OpenAI({apiKey});
+    this.openai = new OpenAI({ apiKey });
   }
 
-  async chatNonStreaming(body: ChatCompletionCreateParamsNonStreaming): Promise<string> {
+  async chatNonStreaming(
+    body: ChatCompletionCreateParamsNonStreaming,
+  ): Promise<string> {
     const updatedBody = await this.applyInterceptors(body);
-    const response = await this.openai.chat.completions.create(updatedBody as ChatCompletionCreateParamsNonStreaming);
+    const response = await this.openai.chat.completions.create(
+      updatedBody as ChatCompletionCreateParamsNonStreaming,
+    );
     return JSON.stringify(response);
   }
 
-  async chatStreaming(body: ChatCompletionCreateParamsStreaming, onChunk: OnChunk): Promise<void> {
+  async chatStreaming(
+    body: ChatCompletionCreateParamsStreaming,
+    onChunk: OnChunk,
+  ): Promise<void> {
     const updatedBody = await this.applyInterceptors(body);
-    const stream = await this.openai.chat.completions.create(updatedBody as ChatCompletionCreateParamsStreaming);
+    const stream = await this.openai.chat.completions.create(
+      updatedBody as ChatCompletionCreateParamsStreaming,
+    );
     for await (const chunk of stream) {
-      const shouldContinue = await onChunk(`data: ${JSON.stringify(chunk)}\n\n`);
+      const shouldContinue = await onChunk(
+        `data: ${JSON.stringify(chunk)}\n\n`,
+      );
       if (!shouldContinue) {
         break;
       }

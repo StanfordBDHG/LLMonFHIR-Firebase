@@ -6,9 +6,14 @@
 // SPDX-License-Identifier: MIT
 //
 
-import {onObjectDeleted} from "firebase-functions/v2/storage";
-import {SERVICE_ACCOUNT, STORAGE_BUCKET, STORAGE_FILE_PATH_PATTERN, STORAGE_REGION} from "../env";
-import {createContextStore} from "../services/create-services";
+import { onObjectDeleted } from "firebase-functions/v2/storage";
+import {
+  SERVICE_ACCOUNT,
+  STORAGE_BUCKET,
+  STORAGE_FILE_PATH_PATTERN,
+  STORAGE_REGION,
+} from "../env.js";
+import { createContextStore } from "../services/create-services.js";
 
 export const onDocumentDeleted = onObjectDeleted(
   {
@@ -32,9 +37,7 @@ export const onDocumentDeleted = onObjectDeleted(
     try {
       const contextStore = createContextStore(studyId);
       await contextStore.delete(event.data.name);
-      console.log(
-        `[Storage] Embeddings removed for ${event.data.name}`,
-      );
+      console.log(`[Storage] Embeddings removed for ${event.data.name}`);
     } catch (error) {
       console.error(
         `[Storage] Error removing embeddings for ${event.data.name}:`,

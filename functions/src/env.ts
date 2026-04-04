@@ -6,7 +6,7 @@
 // SPDX-License-Identifier: MIT
 //
 
-import {defineSecret} from "firebase-functions/params";
+import { defineSecret } from "firebase-functions/params";
 
 export const Secrets = {
   OPENAI_API_KEY: defineSecret("OPENAI_API_KEY"),
@@ -15,9 +15,10 @@ export const Secrets = {
 export const SERVICE_ACCOUNT = `cloud-function-sa@${process.env.GCLOUD_PROJECT}.iam.gserviceaccount.com`;
 
 export const STORAGE_BUCKET =
-  process.env.STORAGE_BUCKET || `${process.env.GCLOUD_PROJECT}.firebasestorage.app`;
+  process.env.STORAGE_BUCKET ??
+  `${process.env.GCLOUD_PROJECT}.firebasestorage.app`;
 
-export const STORAGE_REGION = process.env.STORAGE_REGION || "us-central1";
+export const STORAGE_REGION = process.env.STORAGE_REGION ?? "us-central1";
 
 export const STORAGE_FILE_PATH_PATTERN =
   /studies\/(?<studyId>[^/]+)\/rag_files\/(?<fileName>[^/]+)$/;
