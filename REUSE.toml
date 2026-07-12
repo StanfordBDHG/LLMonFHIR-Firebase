@@ -1,0 +1,13 @@
+version = 1
+
+[[annotations]]
+path = [".agents/**"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Marcus Schiesser and AgentPond contributors"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = ["skills-lock.json"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Stanford University and the project authors (see CONTRIBUTORS.md)"
+SPDX-License-Identifier = "MIT"
