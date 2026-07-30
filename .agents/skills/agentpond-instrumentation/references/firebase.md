@@ -83,8 +83,8 @@ Select the project with Firebase, not AgentPond environments:
 
 ```bash
 firebase use <alias-or-project-id>
-npx agentpond sync
-npx agentpond traces list --limit 10
+npx agentpond@0.9.0 sync
+npx agentpond@0.9.0 traces list --limit 10
 ```
 
-Do not use `npx agentpond env init` or `npx agentpond env use` for Firebase projects.
+Do not use `npx agentpond@0.9.0 env init` or `npx agentpond@0.9.0 env use` for Firebase projects.

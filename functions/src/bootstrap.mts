@@ -10,25 +10,26 @@ import {createFirebaseSpanExporter} from "@agentpond/firebase";
 import {OpenAIInstrumentation} from "@arizeai/openinference-instrumentation-openai";
 import {initializeApp} from "firebase-admin/app";
 import {NodeSDK} from "@opentelemetry/sdk-node";
-import OpenAI from "openai";
 
 initializeApp();
 
-const openAIInstrumentation = new OpenAIInstrumentation({
-  traceConfig: {
-    hideInputs: true,
-    hideOutputs: true,
-  },
-});
+try {
+  const openAIInstrumentation = new OpenAIInstrumentation({
+    traceConfig: {
+      hideInputs: true,
+      hideOutputs: true,
+    },
+  });
 
-openAIInstrumentation.manuallyInstrument(OpenAI);
+  const telemetry = new NodeSDK({
+    traceExporter: createFirebaseSpanExporter(),
+    instrumentations: [openAIInstrumentation],
+  });
 
-const telemetry = new NodeSDK({
-  traceExporter: createFirebaseSpanExporter(),
-  instrumentations: [openAIInstrumentation],
-});
-
-telemetry.start();
+  telemetry.start();
+} catch (error) {
+  console.error("Failed to initialize OpenTelemetry tracing:", error);
+}
 
 const functions = await import("./index.js");
 

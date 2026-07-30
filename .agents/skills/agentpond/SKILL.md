@@ -21,7 +21,7 @@ For Firebase, select the project with Firebase:
 
 ```bash
 firebase use <alias-or-project-id>
-npx agentpond sync
+npx agentpond@0.9.0 sync
 ```
 
 AgentPond follows the Firebase CLI's active project selection, including
@@ -31,10 +31,10 @@ If skill installation is cancelled, `init` stops without printing the coding-age
 For non-Firebase storage, inspect and select an existing AgentPond environment:
 
 ```bash
-npx agentpond env current
-npx agentpond env list
-npx agentpond env use <name>
-npx agentpond sync
+npx agentpond@0.9.0 env current
+npx agentpond@0.9.0 env list
+npx agentpond@0.9.0 env use <name>
+npx agentpond@0.9.0 sync
 ```
 
 Select only an existing non-Firebase environment as part of an analysis request.
@@ -44,23 +44,23 @@ Select only an existing non-Firebase environment as part of an analysis request.
 Start with focused commands:
 
 ```bash
-npx agentpond traces list --limit 25
-npx agentpond traces get <trace-id>
-npx agentpond observations list --traceId <trace-id>
-npx agentpond scores list --traceId <trace-id>
+npx agentpond@0.9.0 traces list --limit 25
+npx agentpond@0.9.0 traces get <trace-id>
+npx agentpond@0.9.0 observations list --traceId <trace-id>
+npx agentpond@0.9.0 scores list --traceId <trace-id>
 ```
 
 Inspect a session when behavior spans multiple traces:
 
 ```bash
-npx agentpond sessions list
-npx agentpond sessions get <session-id>
+npx agentpond@0.9.0 sessions list
+npx agentpond@0.9.0 sessions get <session-id>
 ```
 
 Use SQL for joins, aggregation, time windows, raw event inspection, or cost analysis:
 
 ```bash
-npx agentpond sql "select id, name, session_id, total_cost from traces order by start_time desc limit 10"
+npx agentpond@0.9.0 sql "select id, name, session_id, total_cost from traces order by start_time desc limit 10"
 ```
 
 ## Report findings

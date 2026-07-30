@@ -18,6 +18,7 @@ Read these references when relevant:
 - Instrument only trusted server code. Never import `firebase-admin` or `@agentpond/firebase` into browser or client bundles.
 - Prefer framework or provider auto-instrumentation. Add manual spans only for application logic, chains, tools, or gaps.
 - Reuse the existing Firebase default app and global OpenTelemetry provider. Do not register a competing provider.
+- Configure a content-capture or redaction policy before enabling instrumentation. Default to hiding inputs and outputs unless the project's established policy explicitly permits capture.
 - Initialize tracing before importing or constructing instrumented AI clients.
 - Keep tracing additive and follow the repository's conventions.
 - Never add credentials to source code or ask the user to paste secrets into chat.
@@ -47,6 +48,7 @@ Do not write files or install packages during this phase.
    - detected AI SDKs and framework
    - packages to install
    - existing Firebase and telemetry initialization to reuse
+   - content-capture or redaction policy
    - Storage Rules status
    - files and verification commands expected to change
 
@@ -64,7 +66,7 @@ Stop after presenting the proposal and ask for explicit confirmation before inst
 4. Reuse an existing default Firebase Admin app. Add default initialization only when it is absent; follow [references/firebase.md](references/firebase.md).
 5. Create `createFirebaseSpanExporter()` after the default app exists.
 6. Add the exporter to the existing provider. When no provider exists, create one using APIs supported by the installed OpenTelemetry version and prefer NodeSDK's batched `traceExporter` configuration or an explicit `BatchSpanProcessor`.
-7. Register the selected OpenInference instrumentation before AI clients are created.
+7. Configure the selected OpenInference instrumentation with the approved content-capture or redaction policy, then register it before AI clients are created.
 8. Add manual CHAIN and TOOL spans only where auto-instrumentation leaves important application behavior invisible.
 9. Preserve one `session.id` across all turns in the same conversation.
 10. Fix unsafe Storage Rules before declaring instrumentation complete. Do not add a standalone false rule as a supposed override for a broader allow.
@@ -77,11 +79,13 @@ Treat the work as complete only when:
 2. The server starts or its emulator loads the instrumentation without duplicate-provider or duplicate-app errors.
 3. One real AI request produces OpenInference spans.
 4. Storage Rules do not grant client SDK access to `agentpond/**`.
-5. The trace is visible after:
+5. A representative trace contains only the redacted values allowed by the configured policy and no raw sensitive content.
+6. The trace is visible after selecting the intended Firebase project:
 
 ```bash
-npx agentpond sync
-npx agentpond traces list --limit 10
+firebase use <alias-or-project-id>
+npx agentpond@0.9.0 sync
+npx agentpond@0.9.0 traces list --limit 10
 ```
 
 Inspect the trace and confirm model, CHAIN, TOOL, input/output, parent-child, and session attributes that apply to the application. For short-lived processes, force-flush before exit. Do not shut down a reusable module-level provider after every Firebase request.

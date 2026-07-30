@@ -1,6 +1,6 @@
 # DuckDB Schema
 
-AgentPond stores raw accepted events and projected analysis tables in the configured DuckDB cache. Use `npx agentpond sync` before querying when object storage may contain new events.
+AgentPond stores raw accepted events and projected analysis tables in the configured DuckDB cache. Use `npx agentpond@0.9.0 sync` before querying when object storage may contain new events.
 
 ## Queryable Structures
 
@@ -17,6 +17,8 @@ entity_id TEXT
 body_json TEXT
 event_json TEXT
 ```
+
+Treat `events_raw.body_json`, `events_raw.event_json`, `traces.user_id`, `traces.input_json`, and `traces.output_json` as sensitive. Handle them carefully and do not share raw values.
 
 `traces` contains projected trace rows:
 
@@ -89,31 +91,31 @@ trace_count BIGINT
 Recent high-cost traces:
 
 ```bash
-npx agentpond sql "select id, name, session_id, total_cost from traces order by total_cost desc nulls last limit 20"
+npx agentpond@0.9.0 sql "select id, name, session_id, total_cost from traces order by total_cost desc nulls last limit 20"
 ```
 
 Observation timeline for one trace:
 
 ```bash
-npx agentpond sql "select id, parent_observation_id, type, name, start_time, end_time, total_cost from observations where trace_id = '<trace-id>' order by start_time asc"
+npx agentpond@0.9.0 sql "select id, parent_observation_id, type, name, start_time, end_time, total_cost from observations where trace_id = '<trace-id>' order by start_time asc"
 ```
 
 Scores attached to a trace:
 
 ```bash
-npx agentpond sql "select name, value, string_value, data_type, source, comment, timestamp from scores where trace_id = '<trace-id>' order by timestamp desc"
+npx agentpond@0.9.0 sql "select name, value, string_value, data_type, source, comment, timestamp from scores where trace_id = '<trace-id>' order by timestamp desc"
 ```
 
 Sessions with repeated trace activity:
 
 ```bash
-npx agentpond sql "select id, trace_count, first_seen_at, last_seen_at from sessions order by trace_count desc, last_seen_at desc limit 20"
+npx agentpond@0.9.0 sql "select id, trace_count, first_seen_at, last_seen_at from sessions order by trace_count desc, last_seen_at desc limit 20"
 ```
 
 Raw event inspection:
 
 ```bash
-npx agentpond sql "select event_type, event_timestamp, entity_id, body_json from events_raw where entity_id = '<entity-id>' order by event_timestamp asc"
+npx agentpond@0.9.0 sql "select event_type, event_timestamp, entity_id, body_json from events_raw where entity_id = '<entity-id>' order by event_timestamp asc"
 ```
 
 JSON columns are stored as text. Use DuckDB JSON functions when a query needs fields inside `metadata_json`, `input_json`, `output_json`, `usage_details_json`, `cost_details_json`, `body_json`, or `event_json`.
