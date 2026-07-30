@@ -18,7 +18,7 @@ body_json TEXT
 event_json TEXT
 ```
 
-Treat `events_raw.body_json`, `events_raw.event_json`, `traces.user_id`, `traces.input_json`, and `traces.output_json` as sensitive. Handle them carefully and do not share raw values.
+Treat `events_raw.body_json`, `events_raw.event_json`, `traces.user_id`, `traces.input_json`, `traces.output_json`, `observations.input_json`, and `observations.output_json` as sensitive. Observation-level input and output values may contain prompts or responses; handle them carefully and do not share raw values.
 
 `traces` contains projected trace rows:
 

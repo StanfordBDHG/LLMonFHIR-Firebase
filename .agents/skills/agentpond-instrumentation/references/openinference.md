@@ -39,4 +39,8 @@ Set `session.id` on the outer CHAIN or AGENT span. Generate it once at the conve
 - Short-lived scripts and test commands: force-flush and shut down before process exit.
 - Firebase request handlers: do not shut down a module-level provider after every request.
 
-Run a real application request and verify the resulting trace rather than treating compilation alone as success. Confirm span kinds, redacted input/output values, parent-child relationships, tool results, and session grouping.
+Run a real application request and verify the resulting trace rather than treating compilation alone as success. Confirm span kinds, parent-child relationships, tool results, and session grouping. When content capture is disabled, also verify at the storage level that:
+
+- `input.value` and `output.value` equal `__REDACTED__`.
+- `input.attributes` and `output.attributes` are empty or null.
+- The underlying Firebase Storage object contains no recoverable prompts or responses.
